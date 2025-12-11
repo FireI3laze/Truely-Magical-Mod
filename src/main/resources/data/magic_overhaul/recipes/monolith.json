@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SCS",
+    "WDW",
+    "SCS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:cobblestone_stairs"
+    },
+    "C": {
+      "item": "minecraft:cobblestone"
+    },
+    "W": {
+      "item": "minecraft:cobblestone_wall"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "item": "magic_overhaul:monolith",
+    "count": 1
+  }
+}

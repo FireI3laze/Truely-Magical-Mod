@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "values": [
+    "magic_overhaul:village_rune",
+    "magic_overhaul:mineshaft_rune",
+    "magic_overhaul:ancient_city_rune",
+    "magic_overhaul:spawner_room_rune",
+    "magic_overhaul:outpost_rune",
+    "magic_overhaul:ruined_portal_rune",
+    "magic_overhaul:shipwreck_rune",
+    "magic_overhaul:underwater_ruin_rune",
+    "magic_overhaul:desert_pyramid_rune",
+    "magic_overhaul:jungle_pyramid_rune",
+    "magic_overhaul:buried_treasure_rune",
+    "magic_overhaul:igloo_rune",
+    "magic_overhaul:stronghold_rune",
+    "magic_overhaul:end_city_rune",
+    "magic_overhaul:courses_rune"
+  ]
+}

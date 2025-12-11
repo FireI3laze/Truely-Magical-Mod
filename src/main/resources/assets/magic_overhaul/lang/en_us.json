@@ -1,0 +1,9 @@
+{
+  "block.magic_overhaul.monolith": "Monolith",
+  "block.magic_overhaul.arcane_enchanting_table": "Arcane Enchanting Table",
+  "item.magic_overhaul.magic_essence": "Magic Essence",
+  "item.magic_overhaul.wand": "Wand",
+  "enchantment.magic_overhaul.veil_of_eternity": "Veil of Eternity",
+
+  "creativetab.magic_overhaul_tab": "Magic"
+}
