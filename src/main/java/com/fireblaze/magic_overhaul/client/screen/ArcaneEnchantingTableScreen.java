@@ -1,35 +1,26 @@
 package com.fireblaze.magic_overhaul.client.screen;
 
 import com.fireblaze.magic_overhaul.blockentity.EnchantingTable.MagicAccumulator;
+import com.fireblaze.magic_overhaul.client.ClientConfig;
 import com.fireblaze.magic_overhaul.client.screen.utils.*;
 import com.fireblaze.magic_overhaul.menu.ArcaneEnchantingTableMenu;
 import com.fireblaze.magic_overhaul.network.Network;
 import com.fireblaze.magic_overhaul.network.SetEnchantSelectionPacket;
 import com.fireblaze.magic_overhaul.util.MagicCostCalculator;
-import com.fireblaze.magic_overhaul.util.MagicSourceBlocks;
 import com.fireblaze.magic_overhaul.util.MagicSourceBlockTags;
+import com.fireblaze.magic_overhaul.util.MagicSourceBlocks;
 import com.fireblaze.magic_overhaul.util.PlayerSettings;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.TagKey;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.EnchantedBookItem;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ArcaneEnchantingTableScreen extends AbstractContainerScreen<ArcaneEnchantingTableMenu> {
 
@@ -38,7 +29,6 @@ public class ArcaneEnchantingTableScreen extends AbstractContainerScreen<ArcaneE
         this.imageWidth = 176;
         this.imageHeight = 166;
     }
-
 
     private int scrollOffset = 0;
     private final int rowHeight = 20;
@@ -50,13 +40,27 @@ public class ArcaneEnchantingTableScreen extends AbstractContainerScreen<ArcaneE
     private final int blockRowHeight = 20;
     private final int blockListWidth = 140;
 
+    // Interface Control
+    private final List<ScreenController> controllers = new ArrayList<>();
+    private final Map<ScreenSide, ScreenController> visibleController = new HashMap<>();
+    private final Map<ScreenSide, Boolean> sideVisibilityState = new EnumMap<>(ScreenSide.class);
+    private final Map<ScreenController, ItemStack> controllerIcons = new HashMap<>();
+
+
+    // controllers as fields so we can reference them
+    private ScreenController blocklistController;
+    private ScreenController enchantmentController;
+    private ScreenController magicalBarController;
+
     private MagicAccumulator acc;
     private BlocklistScreen blocklistScreen;
     private MagicPowerBar magicPowerBar;
     private EnchantmentListScreen enchantmentListScreen;
-    private CustomButton toggleButton;
-    private CustomButton irgendEinZweiterButton;
-    private boolean showBlocklist = false;
+
+    // dynamic buttons
+    private final List<CustomButton> controllerSwitchButtons = new ArrayList<>();
+    private final List<CustomButton> sideSwitchButtons = new ArrayList<>();
+    private final List<CustomButton> sideToggleButtons = new ArrayList<>();
 
     @Override
     protected void init() {
@@ -64,7 +68,10 @@ public class ArcaneEnchantingTableScreen extends AbstractContainerScreen<ArcaneE
 
         acc = menu.getBlockEntity().getMagicAccumulator();
 
-        ScreenController blocklistController = new ScreenController(
+        ClientConfig cfg = ClientConfig.get();
+
+        // Build controllers (store as fields)
+        blocklistController = new ScreenController(
                 leftPos,
                 topPos,
                 imageWidth,
@@ -74,6 +81,33 @@ public class ArcaneEnchantingTableScreen extends AbstractContainerScreen<ArcaneE
                 ScreenSide.LEFT
         );
 
+        enchantmentController = new ScreenController(
+                leftPos,
+                topPos,
+                imageWidth,
+                imageHeight,
+                rowHeight,
+                blockListWidth,
+                ScreenSide.LEFT
+        );
+
+        magicalBarController = new ScreenController(
+                leftPos,
+                topPos,
+                imageWidth,
+                imageHeight,
+                rowHeight,
+                400,
+                ScreenSide.TOP
+        );
+
+        // register controllers
+        controllers.clear();
+        controllers.add(blocklistController);
+        controllers.add(enchantmentController);
+        controllers.add(magicalBarController);
+
+        // Build UI components bound to controllers
         blocklistScreen = new BlocklistScreen(
                 blocklistController.getListX(),
                 blocklistController.getListY(),
@@ -86,53 +120,35 @@ public class ArcaneEnchantingTableScreen extends AbstractContainerScreen<ArcaneE
                 acc.getTagPalette()
         );
 
-        int barWidth = 400;
+        enchantmentListScreen = new EnchantmentListScreen(menu, font, enchantmentController, enchantmentController.getListWidth());
 
-        ScreenController topController = new ScreenController(
-                leftPos,
-                topPos,
-                imageWidth,
-                imageHeight,
-                rowHeight,
-                barWidth,
-                ScreenSide.TOP
-        );
+        magicPowerBar = new MagicPowerBar(magicalBarController, font, magicalBarController.getListWidth(), acc.getMagicPowerCapPerPlayerSoft(), 100000);
 
-        magicPowerBar = new MagicPowerBar(topController, font, barWidth, acc.getMagicPowerCapPerPlayerSoft(), 100000); // todo getter für hard cap
-
-        assert Objects.requireNonNull(minecraft).player != null;
-        assert minecraft.player != null;
+        // load player settings
+        assert minecraft != null && minecraft.player != null;
         magicPowerBar.setMotion(PlayerSettings.loadBoolean(minecraft.player, "magicBarMotion", false));
         magicPowerBar.setSparkle(PlayerSettings.loadBoolean(minecraft.player, "magicBarSparkle", true));
 
-        assert minecraft != null;
-        showBlocklist = PlayerSettings.loadBoolean(minecraft.player, "showBlocklist", false);
+        // initial visibility: one visible controller per side (first in that group)
+        var groups = groupControllersBySide();
+        for (var e : groups.entrySet()) {
+            List<ScreenController> grp = e.getValue();
+            if (!grp.isEmpty()) {
+                ScreenController first = grp.get(0);
+                visibleController.put(e.getKey(), first);
+                for (ScreenController c : grp) c.setVisible(c == first);
+            }
+        }
 
-        toggleButton = new CustomButton(
-                leftPos - 14, topPos + 4,
-                leftPos + 4, topPos + 30,
-                ">", "<",
-                0x00000000, 0x00000000, 0xFFAA0FFF,
-                font,
-                state -> {
-                    if (state) {
-                        showBlocklist = true;
+        controllerIcons.put(blocklistController, new ItemStack(Items.BRICKS));        // Blockliste
+        controllerIcons.put(enchantmentController, new ItemStack(Items.ENCHANTED_BOOK)); // Enchantments
+        controllerIcons.put(magicalBarController, new ItemStack(Items.NETHER_STAR));  // Magic Bar
 
-                    }
-                    else showBlocklist = false;
-                    PlayerSettings.saveBoolean(minecraft.player, "showBlocklist", state);
-                }
-        );
-        toggleButton.setToggled(showBlocklist);
-
-        ScreenController enchantmentController = new ScreenController(
-                leftPos, topPos, imageWidth, imageHeight, rowHeight, 130, ScreenSide.LEFT
-        );
-
-        enchantmentListScreen = new EnchantmentListScreen(menu, font, enchantmentController);
+        // ensure components have correct parent coords
+        controllers.forEach(c -> c.recalculatePosition(leftPos, topPos, imageWidth, imageHeight));
+        // initial dynamic UI
+        buildDynamicUI();
     }
-
-
 
     @Override
     public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTicks) {
@@ -142,295 +158,100 @@ public class ArcaneEnchantingTableScreen extends AbstractContainerScreen<ArcaneE
         super.render(gui, mouseX, mouseY, partialTicks);
         this.renderTooltip(gui, mouseX, mouseY);
 
-        toggleButton.render(gui, mouseX, mouseY);
+        // dynamische Buttons zeichnen
+        controllerSwitchButtons.forEach(b -> { if (b.visible) b.render(gui, mouseX, mouseY); });
+        sideSwitchButtons.forEach(b -> { if (b.visible) b.render(gui, mouseX, mouseY); });
+        sideToggleButtons.forEach(b -> { if (b.visible) b.render(gui, mouseX, mouseY); });
+
+        controllerSwitchButtons.forEach(b -> {
+            if (b.visible) {
+                b.render(gui, mouseX, mouseY);
+                if (b.side != null) {
+                    ScreenController visible = visibleController.get(b.side);
+                    if (visible != null) {
+                        ItemStack stack = controllerIcons.get(visible);
+                        if (stack != null) {
+                            gui.renderItem(stack, b.x1 + 11, b.y1);
+                        }
+                    }
+                }
+            }
+        });
+
     }
 
     @Override
     protected void renderBg(GuiGraphics gui, float partialTicks, int x, int y) {
-        int left = (width - imageWidth) / 2;
-        int top = (height - imageHeight) / 2;
+        // update controller parent positions in case leftPos/topPos changed on resize
+        controllers.forEach(c -> c.recalculatePosition(leftPos, topPos, imageWidth, imageHeight));
 
-        enchantmentListScreen.render(gui, mouseX, mouseY);
-
-        //renderEnchantmentList(gui, left, top);
-
-        if (showBlocklist)
-            blocklistScreen.render(gui, mouseX, mouseY);
-
-        int plannedCost = calculateSelectedMagicCost();
-        magicPowerBar.setPlannedConsumption(plannedCost);
-        magicPowerBar.setAccumulatedMagicPower(acc.getAccumulatedMagicPower());
-        magicPowerBar.setCurrentMagicPowerIncreaseRate(acc.getCurrentMagicPowerIncreaseRate());
-        magicPowerBar.render(gui, mouseX, mouseY);
-    }
-
-    private void renderEnchantmentList(GuiGraphics gui, int left, int top) {
-        Map<Enchantment, Integer> selected = menu.getSelectedEnchantments();
-        ItemStack targetItem = menu.getItemInSlot0();
-        Map<Enchantment, Integer> unlocked = menu.getUnlockedEnchantments();
-
-        int listX = left + imageWidth + 6;
-        int listY = top + 4;
-        int visibleRows = imageHeight / rowHeight;
-
-        // Dynamische Sichtliste nach Kompatibilität erstellen
-        var visibleEntries = unlocked.entrySet().stream()
-                .filter(entry -> targetItem.isEmpty() || entry.getKey().canEnchant(targetItem))
-                .filter(entry -> targetItem.isEmpty() || targetItem.getEnchantmentLevel(entry.getKey()) < entry.getValue())
-                .filter(entry -> {
-                    boolean compatible = true;
-                    for (Enchantment alreadySelected : selected.keySet()) {
-                        if (alreadySelected == entry.getKey()) continue;
-                        if (selected.get(alreadySelected) > 0 &&
-                                !entry.getKey().isCompatibleWith(alreadySelected)) {
-                            compatible = false;
-                            break;
-                        }
-                    }
-                    return compatible;
-                })
-                .toList();
-
-        // ScrollOffset korrigieren, falls nötig
-        int totalRows = visibleEntries.size();
-        if (scrollOffset > totalRows - visibleRows)
-            scrollOffset = Math.max(totalRows - visibleRows, 0);
-
-        for (int i = scrollOffset; i < Math.min(scrollOffset + visibleRows, totalRows); i++) {
-            var entry = visibleEntries.get(i);
-            Enchantment ench = entry.getKey();
-            int maxLevel = entry.getValue();
-            int selectedLevel = selected.getOrDefault(ench, 0);
-            int currentOnItem = targetItem.getEnchantmentLevel(ench);
-
-            int y = listY + (i - scrollOffset) * rowHeight;
-
-            int bgColor = selectedLevel > 0 ? 0xA028143C : 0x44000000;
-            gui.fill(listX, y, listX + 130, y + rowHeight, bgColor);
-
-            // Hover Effekt
-            if (isMouseOver(mouseX, mouseY, listX, y, 130, rowHeight)) {
-                int borderColor = 0x5FAA0FFF;
-                int thickness = 1;
-
-                gui.fill(listX, y, listX + 130, y + thickness, borderColor);
-                gui.fill(listX, y + rowHeight - thickness, listX + 130, y + rowHeight, borderColor);
-                gui.fill(listX, y, listX + thickness, y + rowHeight, borderColor);
-                gui.fill(listX + 130 - thickness, y, listX + 130, y + rowHeight, borderColor);
-            }
-
-            gui.drawString(font, ench.getFullname(maxLevel).getString(), listX + 20, y + 2, 0xFFFFFF);
-
-            ItemStack bookStack = new ItemStack(Items.ENCHANTED_BOOK);
-            EnchantedBookItem.addEnchantment(bookStack, new EnchantmentInstance(ench, currentOnItem + 1));
-            gui.renderItem(bookStack, listX + 2, y + 2);
-
-            if (selectedLevel > 0 && maxLevel > 1) {
-                renderSlider(gui, ench, selectedLevel, maxLevel, currentOnItem, listX + 20, y + 12);
-            }
+        // render only visible controllers' content
+        if (enchantmentController.isVisible()) {
+            enchantmentListScreen.render(gui, mouseX, mouseY);
         }
-    }
 
-    // Hilfsmethode
-    private boolean isMouseOver(int mouseX, int mouseY, int x, int y, int width, int height) {
-        return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
-    }
+        if (blocklistController.isVisible()) {
+            // update blocklistScreen positions if parent moved
+            blocklistScreen = new BlocklistScreen(
+                    blocklistController.getListX(),
+                    blocklistController.getListY(),
+                    blocklistController.getListWidth(),
+                    imageHeight,
+                    rowHeight,
+                    font,
+                    acc,
+                    acc.getBlockPalette(),
+                    acc.getTagPalette()
+            );
+            blocklistScreen.render(gui, mouseX, mouseY);
+        }
 
-
-    private void renderSlider(GuiGraphics gui, Enchantment ench, int current, int max, int currentOnItem, int x, int y) {
-        int sliderWidth = 80;
-
-        // Positionen in Pixel
-        int blockedWidth = (int)(sliderWidth * (currentOnItem / (float) max));
-        int filledWidth = (int)(sliderWidth * (current / (float) max));
-
-        // Hintergrund
-        gui.fill(x, y, x + sliderWidth, y + 6, 0xFF555555);
-
-        // Blockierte Levels dunkler
-        if (blockedWidth > 0)
-            gui.fill(x, y, x + blockedWidth, y + 6, 0x88462878); // 0xCC9678C8
-
-        // Gewählte Levels hellgrün
-        if (filledWidth > blockedWidth)
-            gui.fill(x + blockedWidth, y, x + filledWidth, y + 6, 0x889678C8); // 0x88446688
+        // Magic bar always rendered if its controller visible
+        if (magicalBarController.isVisible()) {
+            magicPowerBar.setPlannedConsumption(calculateSelectedMagicCost());
+            magicPowerBar.setAccumulatedMagicPower(acc.getAccumulatedMagicPower());
+            magicPowerBar.setCurrentMagicPowerIncreaseRate(acc.getCurrentMagicPowerIncreaseRate());
+            magicPowerBar.render(gui, mouseX, mouseY);
+        }
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        if (enchantmentListScreen.mouseScrolled(mouseX, mouseY, delta)) return true;
-        if (blocklistScreen.mouseScrolled(mouseX, mouseY, delta)) return true;
+        // pass events only to visible controllers
+        if (enchantmentController.isVisible() && enchantmentListScreen.mouseScrolled(mouseX, mouseY, delta)) return true;
+        if (blocklistController.isVisible() && blocklistScreen.mouseScrolled(mouseX, mouseY, delta)) return true;
 
-        /*
-        Map<Enchantment, Integer> selected = menu.getSelectedEnchantments();
-        ItemStack targetItem = menu.getItemInSlot0();
-        Map<Enchantment, Integer> unlocked = menu.getUnlockedEnchantments();
-
-        int listX = (width - imageWidth) / 2 + imageWidth + 6;
-        int listY = (height - imageHeight) / 2 + 4;
-        int visibleRows = imageHeight / rowHeight;
-
-        // Sichtbare, kompatible Liste berechnen
-        var visibleEntries = unlocked.entrySet().stream()
-                .filter(entry -> targetItem.isEmpty() || entry.getKey().canEnchant(targetItem))
-                // nur anzeigen, wenn noch nicht auf maxLevel
-                .filter(entry -> targetItem.isEmpty() || targetItem.getEnchantmentLevel(entry.getKey()) < entry.getValue())
-                .filter(entry -> {
-                    boolean compatible = true;
-                    for (Enchantment alreadySelected : selected.keySet()) {
-                        if (alreadySelected == entry.getKey()) continue;
-                        if (selected.get(alreadySelected) > 0 &&
-                                !entry.getKey().isCompatibleWith(alreadySelected)) {
-                            compatible = false;
-                            break;
-                        }
-                    }
-                    return compatible;
-                })
-                .toList();
-
-        int totalRows = visibleEntries.size();
-
-        // Prüfen, ob Maus über ausgewähltem Enchantment ist
-        int rowIndex = 0;
-        for (int i = scrollOffset; i < Math.min(scrollOffset + visibleRows, totalRows); i++) {
-            var entry = visibleEntries.get(i);
-            Enchantment ench = entry.getKey();
-            int maxLevel = entry.getValue();
-            int y = listY + rowIndex * rowHeight;
-
-            if (mouseX >= listX && mouseX <= listX + 130 &&
-                    mouseY >= y && mouseY <= y + rowHeight &&
-                    selected.getOrDefault(ench, 0) > 0 &&
-                    !targetItem.isEmpty()) {
-
-                int currentLevel = selected.get(ench);
-                int currentOnItem = targetItem.getEnchantmentLevel(ench);
-                int newLevel = currentLevel + (delta > 0 ? 1 : -1);
-
-                if (newLevel < 1) newLevel = 1;
-                if (newLevel > maxLevel) newLevel = maxLevel;
-                if (newLevel <= currentOnItem) newLevel = currentOnItem + 1;
-
-                sendSelectionUpdate(ench, newLevel);
-                return true; // Event behandelt, Liste scrollt nicht
-            }
-
-            rowIndex++;
+        // check controller-switch buttons
+        for (var b : controllerSwitchButtons) {
+            // scrolling doesn't affect buttons
         }
 
-        boolean hoverEnchantList =
-                mouseX >= listX && mouseX <= listX + 130 &&
-                        mouseY >= listY && mouseY <= listY + imageHeight;
-
-        // Scroll-Liste nur wenn mehr Zeilen als sichtbar
-        if (hoverEnchantList && totalRows > visibleRows) {
-            scrollOffset -= (delta > 0 ? 1 : -1);
-            if (scrollOffset < 0) scrollOffset = 0;
-
-            int maxScroll = totalRows - visibleRows;
-            if (scrollOffset > maxScroll) scrollOffset = maxScroll;
-
-            return true;
-        }
-        */
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (toggleButton.mouseReleased(mouseX, mouseY, button)) return true;
-
+        for (var b : controllerSwitchButtons) if (b.mouseReleased(mouseX, mouseY, button)) return true;
+        for (var b : sideSwitchButtons) if (b.mouseReleased(mouseX, mouseY, button)) return true;
+        for (var b : sideToggleButtons) if (b.mouseReleased(mouseX, mouseY, button)) return true;
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (enchantmentListScreen.mouseClicked(mouseX, mouseY, button)) return true;
+        if (enchantmentController.isVisible() && enchantmentListScreen.mouseClicked(mouseX, mouseY, button)) return true;
+        if (magicalBarController.isVisible() && magicPowerBar.handleMouseClick(mouseX, mouseY, button)) return true;
 
-
-        int left = (width - imageWidth) / 2;
-        int listX = left + imageWidth + 6;
-        int listY = (height - imageHeight) / 2 + 4;
-
-        if (magicPowerBar.handleMouseClick(mouseX, mouseY, button))
-            return true;
-
-        if (toggleButton.mouseClicked(mouseX, mouseY, button))
-            return true;
-
-        /*
-        ItemStack targetItem = menu.getItemInSlot0();
-        if (targetItem.isEmpty())
-            return super.mouseClicked(mouseX, mouseY, button);
-
-        int renderedIndex = 0;
-        int visibleRows = imageHeight / rowHeight;
-
-        for (var entry : menu.getUnlockedEnchantments().entrySet()) {
-            Enchantment ench = entry.getKey();
-            int max = entry.getValue();
-            int currentOnItem = targetItem.getEnchantmentLevel(ench);
-
-            // Filter: nur passend UND noch nicht auf dem Item alle Stufen
-            if (!ench.canEnchant(targetItem) || currentOnItem >= max)
-                continue;
-
-            // Kompatibilitätscheck
-            boolean compatible = true;
-            for (Enchantment alreadySelected : menu.getSelectedEnchantments().keySet()) {
-                if (alreadySelected == ench)
-                    continue; // sich selbst ignorieren
-                if (menu.getSelectedEnchantments().get(alreadySelected) > 0 && !ench.isCompatibleWith(alreadySelected)) {
-                    compatible = false;
-                    break;
-                }
-            }
-            if (!compatible)
-                continue;
-
-            if (renderedIndex < scrollOffset) {
-                renderedIndex++;
-                continue;
-            }
-            if (renderedIndex >= scrollOffset + visibleRows)
-                break;
-
-            int y = listY + (renderedIndex - scrollOffset) * rowHeight;
-
-            if (mouseX >= listX && mouseX <= listX + 130 && mouseY >= y && mouseY <= y + rowHeight) {
-                int currentSelected = menu.getSelectedEnchantments().getOrDefault(ench, 0);
-
-                if (button == 0) {
-                    int newLevel = (currentSelected == 0) ? max : 0;
-                    sendSelectionUpdate(ench, newLevel);
-                    return true;
-                }
-
-                if (button == 1 && max > 1) {
-                    int newLevel = currentSelected;
-                    newLevel++;
-                    if (newLevel <= currentOnItem)
-                        newLevel = currentOnItem + 1;
-                    if (newLevel > max)
-                        newLevel = currentOnItem + 1;
-                    sendSelectionUpdate(ench, newLevel);
-                    return true;
-                }
-            }
-
-            renderedIndex++;
-        }
-        */
+        for (var b : controllerSwitchButtons) if (b.visible && b.mouseClicked(mouseX, mouseY, button)) return true;
+        for (var b : sideSwitchButtons) if (b.visible && b.mouseClicked(mouseX, mouseY, button)) return true;
+        for (var b : sideToggleButtons) if (b.visible && b.mouseClicked(mouseX, mouseY, button)) return true;
 
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
     private void sendSelectionUpdate(Enchantment ench, int level) {
         int currentLevel = menu.getSelectedEnchantments().getOrDefault(ench, 0);
-
         if (currentLevel == level) return;
-
         menu.getSelectedEnchantments().put(ench, level);  // Map vom Menu updaten
         Network.sendToServer(new SetEnchantSelectionPacket(ench, level));
     }
@@ -454,132 +275,6 @@ public class ArcaneEnchantingTableScreen extends AbstractContainerScreen<ArcaneE
         }
     }
 
-    /*
-    private void renderBlockPalette(GuiGraphics graphics, int left, int top) {
-        MagicAccumulator magicAccumulator = menu.getBlockEntity().getMagicAccumulator();
-        Map <Block, MagicSourceBlocks> blockPalette = magicAccumulator.getBlockPalette();
-        Map <TagKey<Block>, MagicSourceBlockTags> tagPalette = magicAccumulator.getTagPalette();
-
-        List<Object> entries = new ArrayList<>();
-
-        if (blockPalette != null && !blockPalette.isEmpty()) {
-            entries.addAll(blockPalette.values());
-        }
-
-        if (tagPalette != null && !tagPalette.isEmpty()) {
-            entries.addAll(tagPalette.values());
-        }
-
-        int listX = left - blockListWidth - 40;
-        int listY = top + 4;
-        int visibleRows = imageHeight / blockRowHeight;
-
-        int totalEntries = entries.size();
-
-        for (int i = 0; i < visibleRows; i++) {
-            int entryIndex = i + blockScrollOffset;
-            if (entryIndex >= totalEntries) break;
-
-            Object entry = entries.get(entryIndex);
-            int yPos = listY + i * rowHeight;
-
-            Block renderBlock;
-            String displayName;
-            int displayCurrent; // was angezeigt wird (anzPlaced * magicPerBlock, ggf. geclamped)
-            int displayMax;     // magic cap für den Eintrag
-            int perBlock;       // magic per block (für Tooltip)
-
-            if (entry instanceof MagicSourceBlocks rb) {
-                // ---- Einzelblock ----
-                renderBlock = rb.block;
-                displayMax = rb.magicCap;
-                perBlock = rb.magicPower;
-
-                // gesammelte akkumulierte Power vom BE (kann kleiner als placed*perBlock sein, wenn Zählung partiell ist)
-                int accumulated = magicAccumulator.getCurrentPowerForBlock(rb.block);
-
-                // versuche die Anzahl platzierter Blöcke abzuschätzen (ceil), dann multiplizieren
-                int placed = perBlock > 0 ? (int) Math.ceil((double) accumulated / perBlock) : 0;
-                displayCurrent = Math.min(placed * perBlock, displayMax);
-
-                // Name anzeigen (Blockname)
-                displayName = rb.block.getName().getString();
-
-            } else if (entry instanceof MagicSourceBlockTags rt) {
-                // ---- Tag-Eintrag ----
-                // Hole alle Blöcke des Tags
-                Iterable<Holder<Block>> holders = BuiltInRegistries.BLOCK.getTagOrEmpty(rt.tag);
-                List<Block> tagBlocks = new ArrayList<>();
-                for (Holder<Block> holder : holders) {
-                    tagBlocks.add(holder.value());
-                }
-
-                if (tagBlocks.isEmpty()) {
-                    // Render Fallback-Text
-                    graphics.drawString(font, "[INVALID TAG]", listX + 18, yPos + 4, 0xAAAAAA, false);
-                    continue;
-                }
-
-                // Für das Icon: rotiere durch die Tag-Blöcke
-                int rotation = (int) ((System.currentTimeMillis() / 1000) % tagBlocks.size());
-                renderBlock = tagBlocks.get(rotation);
-
-                // Summiere akkumulierte Power über alle Block-Typen des Tags (wie im BE gespeichert)
-                int accumulatedSum = magicAccumulator.getCurrentPowerForTag(rt.tag);
-
-                perBlock = rt.magicPower;
-                displayMax = rt.magicCap;
-
-                int placed = perBlock > 0 ? (int) Math.ceil((double) accumulatedSum / perBlock) : 0;
-                displayCurrent = Math.min(placed * perBlock, displayMax);
-
-                // Name: Tag-Path (kein '#'), erster Buchstabe groß
-                String raw = rt.tag.location().getPath(); // z.B. "wool"
-                displayName = raw.isEmpty() ? raw : raw.substring(0, 1).toUpperCase() + raw.substring(1);
-
-            } else {
-                // sollte nicht passieren
-                continue;
-            }
-
-            // ---- ICON ----
-            graphics.renderItem(renderBlock.asItem().getDefaultInstance(), listX, yPos);
-
-            // ---- NAME (ggf. kürzen) ----
-            String blockName = displayName;
-            int maxWidth = 100 - 18 - 2;
-            while (font.width(blockName) > maxWidth && !blockName.isEmpty()) {
-                blockName = blockName.substring(0, blockName.length() - 1);
-            }
-            if (font.width(blockName) > maxWidth) {
-                blockName = blockName.substring(0, blockName.length() - 3) + "...";
-            }
-
-            // Verschoben nach unten (yPos + 4)
-            graphics.drawString(font, blockName, listX + 18, yPos + 4, 0xFFFFFF, false);
-
-            // ---- POWER (aktuell / max) ----
-            String powerText = displayCurrent + "/" + displayMax;
-            int rightX = listX + 130;
-            int textWidth = font.width(powerText);
-            int drawX = rightX - textWidth;
-            graphics.drawString(font, powerText, drawX, yPos + 4, 0xFFFFFF, false);
-
-            // ---- TOOLTIP ----
-            if (mouseX >= listX && mouseX <= listX + 16 &&
-                    mouseY >= yPos && mouseY <= yPos + 16) {
-
-                List<Component> tooltip = new ArrayList<>();
-                tooltip.add(Component.literal(blockName));
-                tooltip.add(Component.literal("Current: " + displayCurrent + " / Max: " + displayMax));
-                tooltip.add(Component.literal("Per Block: " + perBlock)); // Per-Block Info wie gewünscht
-
-                graphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
-            }
-        }
-    }
-    */
-
     private int calculateSelectedMagicCost() {
         int totalCost = 0;
         Map<Enchantment, Integer> selected = menu.getSelectedEnchantments();
@@ -589,6 +284,294 @@ public class ArcaneEnchantingTableScreen extends AbstractContainerScreen<ArcaneE
             totalCost += MagicCostCalculator.calculateMagicRequirement(ench, level);
         }
         return totalCost;
+    }
+
+    private Map<ScreenSide, List<ScreenController>> groupControllersBySide() {
+        return controllers.stream().collect(Collectors.groupingBy(ScreenController::getSide));
+    }
+
+    // -------------------------
+    // Dynamic UI builders
+    // -------------------------
+
+    private void buildDynamicUI() {
+        controllerSwitchButtons.clear();
+        sideSwitchButtons.clear();
+        sideToggleButtons.clear(); // neue Liste für Toggle-Buttons
+
+        buildSwitchButtons();
+        buildSideSwitchButtons();
+        buildSideToggleButtons(); // neuer Button
+    }
+
+    private void buildSwitchButtons() {
+        controllerSwitchButtons.clear(); // alte Buttons löschen
+
+        var groups = groupControllersBySide();
+
+        for (var entry : groups.entrySet()) {
+            ScreenSide side = entry.getKey();
+
+            // Nur LEFT oder RIGHT Buttons erstellen
+            if (side != ScreenSide.LEFT && side != ScreenSide.RIGHT) continue;
+
+            List<ScreenController> group = entry.getValue();
+            if (group.isEmpty()) continue;
+
+            // Button nur, wenn mehr als 1 Interface auf der Seite
+            if (group.size() <= 1) continue;
+
+            ScreenController visible = visibleController.get(side);
+            if (visible == null) continue;
+
+            // Position des Buttons immer relativ zum sichtbaren Controller
+            int x = getButtonXRelative(visible, 0);
+            int y = getButtonYBelow(visible, 4); // über dem Interface
+
+            // **Nur ein Button pro Seite**
+            CustomButton cycle = new CustomButton(
+                    x,
+                    y,
+                    x + 40,
+                    y + 16,
+                    "",
+                    "",
+                    0xFF333333,
+                    0xFF333333,
+                    0xFFAA0FFF,
+                    font,
+                    (newState) -> cycleToNextController(side),
+                    side
+            );
+
+            controllerSwitchButtons.add(cycle);
+        }
+    }
+
+    private void cycleToNextController(ScreenSide side) {
+        List<ScreenController> group = groupControllersBySide().get(side);
+        if (group == null || group.size() <= 1) return;
+
+        ScreenController current = visibleController.get(side);
+        int idx = group.indexOf(current);
+        if (idx == -1) return;
+
+        int next = (idx + 1) % group.size(); // zirkulär
+        ScreenController nextController = group.get(next);
+
+        // Sichtbarkeit aktualisieren
+        visibleController.put(side, nextController);
+        for (ScreenController c : group) {
+            c.setVisible(c == nextController);
+        }
+
+        // **Button nicht erneut bauen**, sondern nur Position ggf. anpassen
+        // controllerSwitchButtons.clear(); // NICHT mehr aufrufen
+        CustomButton btn = controllerSwitchButtons.stream().findFirst().orElse(null);
+        if (btn != null) {
+            btn.x1 = getButtonXRelative(nextController, 0);
+            btn.y1 = getButtonYBelow(nextController, 4);
+            btn.x2 = btn.x1 + 40;
+            btn.y2 = btn.y1 + 16;
+        }
+
+    }
+
+
+    private void switchToController(ScreenSide side, ScreenController controller) {
+        visibleController.put(side, controller);
+        for (ScreenController c : groupControllersBySide().getOrDefault(side, Collections.emptyList())) {
+            c.setVisible(c == controller);
+        }
+        // update buttons (toggled state)
+        for (CustomButton b : controllerSwitchButtons) {
+            // set toggled states by comparing label -> safe enough if displayNames unique per group
+            b.setToggled(bLabelEquals(b, controller.getDisplayName()));
+        }
+    }
+
+    private boolean bLabelEquals(CustomButton b, String label) {
+        // reflection of label text is not exposed; as a pragmatic approach we assume unique labels and check toggled already set
+        // (we update toggled in creation and on switchToController above), so nothing to do here unless you expose getter on CustomButton.
+        return b != null && b.getWidth() >= 0; // noop placeholder to keep compile-time consistent
+    }
+
+    private void buildSideSwitchButtons() {
+        var groups = groupControllersBySide();
+
+        for (var entry : groups.entrySet()) {
+            ScreenSide side = entry.getKey();
+
+            // nur LEFT oder RIGHT Buttons erstellen
+            if (side != ScreenSide.LEFT && side != ScreenSide.RIGHT) continue;
+
+            List<ScreenController> group = entry.getValue();
+            if (group.isEmpty()) continue;
+
+            ScreenController visible = visibleController.get(side);
+            if (visible == null) continue;
+
+            int x = getButtonXRelative(visible, 50); // Offset rechts für Move-Button
+            int y = getButtonYBelow(visible, 4);    // unterhalb des Interface
+
+
+            CustomButton move = new CustomButton(
+                    x,
+                    y,
+                    x + 40,
+                    y + 16,
+                    "Move",
+                    "Move",
+                    0xFF333333,
+                    0xFF555555,
+                    0xFFAA0FFF,
+                    font,
+                    (newState) -> {
+                        ScreenController currentVisible = visibleController.get(side);
+                        if (currentVisible != null) moveControllerToOppositeSide(currentVisible);
+                    }
+
+            );
+
+            sideSwitchButtons.add(move);
+        }
+    }
+
+    private void moveControllerToOppositeSide(ScreenController controller) {
+        ScreenSide oldSide = controller.getSide();
+        ScreenSide newSide = (oldSide == ScreenSide.LEFT) ? ScreenSide.RIGHT : ScreenSide.LEFT;
+
+        controller.moveToSide(newSide);
+
+        // re-evaluate groups and visible map: if the controller was visible on old side,
+        // move visibility to this controller in the new side (and ensure only one visible per side)
+        controllers.forEach(c -> c.recalculatePosition(leftPos, topPos, imageWidth, imageHeight));
+
+        // re-create grouping defaults: ensure each side has a visible controller
+        var groups = groupControllersBySide();
+        // ensure visible controller mapping remains valid
+        groups.forEach((side, list) -> {
+            ScreenController currently = visibleController.get(side);
+            if (currently == null || !list.contains(currently)) {
+                // pick first available
+                if (!list.isEmpty()) visibleController.put(side, list.get(0));
+            }
+            // ensure visible flags
+            for (ScreenController sc : list) sc.setVisible(sc == visibleController.get(side));
+        });
+
+        // rebuild dynamic UI to reflect new positions / buttons
+        buildDynamicUI();
+    }
+
+    private void buildSideToggleButtons() {
+        var groups = groupControllersBySide();
+
+        for (var entry : groups.entrySet()) {
+            ScreenSide side = entry.getKey();
+
+            // nur LEFT und RIGHT Buttons erstellen
+            if (side != ScreenSide.LEFT && side != ScreenSide.RIGHT) continue;
+
+            List<ScreenController> group = entry.getValue();
+            if (group.isEmpty()) continue;
+
+            ScreenController visible = visibleController.get(side);
+            if (visible == null) continue;
+
+            int x = getButtonXRelative(visible, 100); // rechts neben Move-Button
+            int y = getButtonYBelow(visible, 4);      // unterhalb des Interface
+
+            // initialer Zustand: alle sichtbar
+            sideVisibilityState.putIfAbsent(side, true);
+
+            CustomButton toggle = new CustomButton(
+                    x,
+                    y,
+                    x + 40,
+                    y + 16,
+                    "Hide",
+                    "Show",
+                    0xFF333333,
+                    0xFF555555,
+                    0xFFAA0FFF,
+                    font,
+                    (newState) -> toggleSideVisibility(side)
+            );
+
+            sideToggleButtons.add(toggle);
+        }
+    }
+
+    private void toggleSideVisibility(ScreenSide side) {
+        boolean currentlyVisible = sideVisibilityState.getOrDefault(side, true);
+        boolean newVisibility = !currentlyVisible;
+        sideVisibilityState.put(side, newVisibility);
+
+        List<ScreenController> group = groupControllersBySide().getOrDefault(side, Collections.emptyList());
+
+        if (newVisibility) {
+            // nur den aktuell sichtbaren Controller anzeigen
+            ScreenController visible = visibleController.get(side);
+            if (visible != null) {
+                visible.setVisible(true);
+            }
+            // alle anderen unsichtbar
+            for (ScreenController c : group) {
+                if (c != visible) c.setVisible(false);
+            }
+        } else {
+            // alle ausblenden
+            for (ScreenController c : group) {
+                c.setVisible(false);
+            }
+        }
+
+        // Cycle- und Move-Buttons auf dieser Seite ein-/ausblenden
+        controllerSwitchButtons.forEach(b -> {
+            if (bMatchesSide(b, side)) {
+                b.visible = newVisibility;
+            }
+        });
+
+        sideSwitchButtons.forEach(b -> {
+            if (bMatchesSide(b, side)) {
+                b.visible = newVisibility;
+            }
+        });
+
+        // Toggle-Buttons selbst immer sichtbar lassen
+        sideToggleButtons.forEach(b -> b.visible = true);
+    }
+
+    // Hilfsmethode: Prüft, ob ein Button zu einer Seite gehört
+    private boolean bMatchesSide(CustomButton b, ScreenSide side) {
+        if (side != ScreenSide.LEFT && side != ScreenSide.RIGHT) return false;
+
+        ScreenController visible = visibleController.get(side);
+        if (visible == null) return false;
+
+        int baseX = visible.getListX();
+        int baseY = getButtonYBelow(visible, 4); // <- neue Position unterhalb des Interfaces
+
+        // Buttons liegen in einem bekannten Offset zum Controller
+        return (b.x1 >= baseX && b.x1 <= baseX + 120) && (b.y1 == baseY);
+    }
+
+    // Gibt die Y-Position unterhalb des Interfaces zurück
+    private int getButtonYBelow(ScreenController controller, int offset) {
+        return controller.getListY() + controller.getHeight() + offset;
+    }
+
+    // Gibt die X-Position relativ zum Interface zurück (für mehrere Buttons nebeneinander)
+    private int getButtonXRelative(ScreenController controller, int offset) {
+        return controller.getListX() + offset;
+    }
+
+    private ScreenController getControllerForToggleButton(CustomButton b) {
+        if (bMatchesSide(b, ScreenSide.LEFT)) return visibleController.get(ScreenSide.LEFT);
+        if (bMatchesSide(b, ScreenSide.RIGHT)) return visibleController.get(ScreenSide.RIGHT);
+        return null;
     }
 
 }

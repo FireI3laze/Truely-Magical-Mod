@@ -76,6 +76,7 @@ public class ArcaneEnchantingTableBlock extends Block implements EntityBlock {
 
             SyncMagicAccumulatorPacket.sendToClient(serverPlayer, tableBE.getBlockPos(), tableBE.getMagicAccumulator()); // Packet for the accumulated magic
 
+
             // --- 3. GUI öffnen und Sync an Client ---
             // --- GUI öffnen ---
             NetworkHooks.openScreen(serverPlayer, new MenuProvider() {

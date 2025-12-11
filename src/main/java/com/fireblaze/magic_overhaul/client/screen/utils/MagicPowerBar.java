@@ -67,16 +67,10 @@ public class MagicPowerBar {
     }
     public void setMotion(boolean motion) {
         this.motion = motion;
-
-        assert Minecraft.getInstance().player != null;
-        PlayerSettings.saveBoolean(Minecraft.getInstance().player, "magicBarMotion", motion);
     }
 
     public void setSparkle(boolean sparkle) {
         this.sparkle = sparkle;
-
-        assert Minecraft.getInstance().player != null;
-        PlayerSettings.saveBoolean(Minecraft.getInstance().player, "magicBarSparkle", sparkle);
     }
     public void setPlannedConsumption(float amount) {
         this.plannedConsumption = amount;

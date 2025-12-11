@@ -5,8 +5,8 @@ import net.minecraft.client.gui.GuiGraphics;
 
 public class CustomButton {
 
-    private int x1, y1;
-    private int x2, y2;
+    public int x1, y1;
+    public int x2, y2;
 
     private final String labelOff;
     private final String labelOn;
@@ -18,8 +18,11 @@ public class CustomButton {
     private boolean hovered = false;
     private boolean armed = false;
     private boolean toggled = false;
+    public boolean visible = true;
 
     private final Font font;
+
+    public ScreenSide side; // <- Neue Property
 
     public interface ClickHandler {
         void onClick(boolean newState);
@@ -27,6 +30,22 @@ public class CustomButton {
 
     private final ClickHandler clickHandler;
 
+    // Neuer Konstruktor mit Seite
+    public CustomButton(int x1, int y1, int x2, int y2,
+                        String labelOff,
+                        String labelOn,
+                        int unpressedColor,
+                        int pressedColor,
+                        int hoverBorderColor,
+                        Font font,
+                        ClickHandler clickHandler,
+                        ScreenSide side) {
+
+        this(x1, y1, x2, y2, labelOff, labelOn, unpressedColor, pressedColor, hoverBorderColor, font, clickHandler);
+        this.side = side;
+    }
+
+    // Original-Konstruktor (falls benötigt)
     public CustomButton(int x1, int y1, int x2, int y2,
                         String labelOff,
                         String labelOn,
@@ -35,7 +54,6 @@ public class CustomButton {
                         int hoverBorderColor,
                         Font font,
                         ClickHandler clickHandler) {
-
         this.x1 = Math.min(x1, x2);
         this.y1 = Math.min(y1, y2);
         this.x2 = Math.max(x1, x2);
@@ -50,9 +68,9 @@ public class CustomButton {
 
         this.font = font;
         this.clickHandler = clickHandler;
+        this.side = null; // Standard: keine Seite
     }
 
-    /** Setzt die Position nachträglich (z. B. nach Init, wenn leftPos bekannt ist) */
     public void setPosition(int newX, int newY) {
         int w = getWidth();
         int h = getHeight();
@@ -63,13 +81,11 @@ public class CustomButton {
     }
 
     public void render(GuiGraphics gui, int mouseX, int mouseY) {
-        // Maus relativ zum Button prüfen
         hovered = mouseX >= x1 && mouseX <= x2 && mouseY >= y1 && mouseY <= y2;
 
         int bg = toggled ? pressedColor : unpressedColor;
         gui.fill(x1, y1, x2, y2, bg);
 
-        // Hover-Rahmen
         if (hovered) {
             gui.fill(x1, y1, x2, y1 + 1, hoverBorderColor);
             gui.fill(x1, y2 - 1, x2, y2, hoverBorderColor);
@@ -108,15 +124,15 @@ public class CustomButton {
         return mx >= x1 && mx <= x2 && my >= y1 && my <= y2;
     }
 
-    private int getWidth() {
+    public int getWidth() {
         return x2 - x1;
     }
 
     private int getHeight() {
         return y2 - y1;
     }
+
     public void setToggled(boolean state) {
         this.toggled = state;
     }
-
 }
