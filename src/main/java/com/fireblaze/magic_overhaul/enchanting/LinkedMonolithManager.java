@@ -98,8 +98,6 @@ public class LinkedMonolithManager {
 
         if (changed) {
             arcaneEnchantingTable.setChanged();
-
-            // --> NEU: an alle Spieler syncen, die dieses BE offen haben
         }
 
         Network.syncLinkedMonoliths(arcaneEnchantingTable);

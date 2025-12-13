@@ -1,0 +1,30 @@
+{
+  "id": "magic_overhaul:outpost",
+  "color": "#FFD700",
+  "enchantments": [
+    "minecraft:looting",
+    "minecraft:piercing",
+    "minecraft:multishot",
+    "minecraft:quick_charge"
+  ],
+  "blocks": [
+    { "block": "minecraft:dark_oak_log", "min": 2, "max": 3 },
+    { "block": "minecraft:dark_oak_planks", "min": 2, "max": 3 },
+    { "block": "minecraft:campfire", "min": 3, "max": 4 },
+    { "block": "minecraft:sandstone", "min": 1, "max": 2 },
+    { "block": "minecraft:jack_o_lantern", "min": 100, "max": 600 },
+    { "block": "minecraft:pumpkin", "min": 2, "max": 3 }
+  ],
+  "block_tags": [],
+  "loot": {
+    "tables": [
+      "minecraft:chests/pillager_outpost"
+    ],
+    "chance": 0.5
+  },
+  "trade": {
+    "profession": null,
+    "level": 0,
+    "max_uses": 0
+  }
+}

@@ -53,13 +53,6 @@ public class Network {
         );
 
         CHANNEL.registerMessage(id++,
-                SyncBoundTablePacket.class,
-                SyncBoundTablePacket::encode,
-                SyncBoundTablePacket::decode,
-                SyncBoundTablePacket::handle
-        );
-
-        CHANNEL.registerMessage(id++,
                 SyncLinkedMonolithsPacket.class,
                 SyncLinkedMonolithsPacket::encode,
                 SyncLinkedMonolithsPacket::decode,
@@ -71,6 +64,20 @@ public class Network {
                 SyncMagicAccumulatorPacket::encode,
                 SyncMagicAccumulatorPacket::decode,
                 SyncMagicAccumulatorPacket::handle
+        );
+
+        CHANNEL.registerMessage(id++,
+                ConsumeMagicEssencePacket.class,
+                ConsumeMagicEssencePacket::encode,
+                ConsumeMagicEssencePacket::decode,
+                ConsumeMagicEssencePacket::handle
+        );
+
+        CHANNEL.registerMessage(id++,
+                SyncBindingPacket.class,
+                SyncBindingPacket::encode,
+                SyncBindingPacket::decode,
+                SyncBindingPacket::handle
         );
     }
 
@@ -96,23 +103,5 @@ public class Network {
 
     public static void sendWandModeToServer(int modeId) {
         sendToServer(new SetWandModePacket(modeId));
-    }
-
-    public record SyncBoundTablePacket(long boundPos) {
-
-        public static void encode(SyncBoundTablePacket pkt, FriendlyByteBuf buf) {
-            buf.writeLong(pkt.boundPos);
-        }
-
-        public static SyncBoundTablePacket decode(FriendlyByteBuf buf) {
-            return new SyncBoundTablePacket(buf.readLong());
-        }
-
-        public static void handle(SyncBoundTablePacket pkt, Supplier<NetworkEvent.Context> ctx) {
-            ctx.get().enqueueWork(() -> {
-
-            });
-            ctx.get().setPacketHandled(true);
-        }
     }
 }

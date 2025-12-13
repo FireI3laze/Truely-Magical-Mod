@@ -1,0 +1,31 @@
+{
+  "id": "magic_overhaul:spawner_room",
+  "color": "#FF0000",
+  "enchantments": [
+    "minecraft:sharpness",
+    "minecraft:smite",
+    "minecraft:bane_of_arthropods",
+    "minecraft:sweeping"
+  ],
+  "blocks": [
+    { "block": "minecraft:spawner", "min": 900, "max": 900 },
+    { "block": "minecraft:mossy_cobblestone", "min": 2, "max": 3 },
+    { "block": "minecraft:cobblestone_wall", "min": 2, "max": 3 },
+    { "block": "minecraft:cobblestone", "min": 1, "max": 2 },
+    { "block": "minecraft:mossy_cobblestone_wall", "min": 1, "max": 2 },
+    { "block": "minecraft:iron_bars", "min": 2, "max": 3 },
+    { "block": "minecraft:glow_lichen", "min": 1, "max": 2 }
+  ],
+  "block_tags": [],
+  "loot": {
+    "tables": [
+      "minecraft:chests/simple_dungeon"
+    ],
+    "chance": 0.5
+  },
+  "trade": {
+    "profession": null,
+    "level": 0,
+    "max_uses": 0
+  }
+}

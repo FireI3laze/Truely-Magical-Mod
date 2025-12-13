@@ -1,0 +1,37 @@
+{
+  "id": "magic_overhaul:mineshaft",
+  "color": "#8B4513",
+  "enchantments": [
+    "minecraft:fortune",
+    "minecraft:unbreaking",
+    "minecraft:silk_touch"
+  ],
+  "blocks": [
+    { "block": "minecraft:rail", "min": 3, "max": 5 },
+    { "block": "minecraft:chest", "min": 2, "max": 3 },
+    { "block": "minecraft:cobweb", "min": 2, "max": 3 },
+    { "block": "minecraft:oak_fence", "min": 1, "max": 2 },
+    { "block": "minecraft:stone", "min": 1, "max": 2 },
+    { "block": "minecraft:andesite", "min": 90, "max": 900 },
+    { "block": "minecraft:diorite", "min": 1, "max": 2 },
+    { "block": "minecraft:granite", "min": 1, "max": 2 },
+    { "block": "minecraft:glow_lichen", "min": 1, "max": 2 },
+    { "block": "minecraft:gravel", "min": 1, "max": 2 },
+    { "block": "minecraft:dripstone_block", "min": 1, "max": 2 },
+    { "block": "minecraft:pointed_dripstone", "min": 1, "max": 2 }
+  ],
+  "block_tags": [
+    { "tag": "forge:ores", "min": 4, "max": 5 }
+  ],
+  "loot": {
+    "tables": [
+      "minecraft:chests/abandoned_mineshaft"
+    ],
+    "chance": 0.75
+  },
+  "trade": {
+    "profession": null,
+    "level": 0,
+    "max_uses": 0
+  }
+}

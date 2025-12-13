@@ -1,0 +1,28 @@
+{
+  "id": "magic_overhaul:stronghold",
+  "color": "#696969",
+  "enchantments": [
+    "minecraft:infinity"
+  ],
+  "blocks": [
+    { "block": "minecraft:stone_bricks", "min": 2, "max": 3 },
+    { "block": "minecraft:cracked_stone_bricks", "min": 2, "max": 3 },
+    { "block": "minecraft:end_portal_frame", "min": 5, "max": 5 },
+    { "block": "minecraft:iron_bars", "min": 2, "max": 3 },
+    { "block": "minecraft:smooth_stone", "min": 1, "max": 2 },
+    { "block": "minecraft:bookshelf", "min": 1, "max": 2 },
+    { "block": "minecraft:cobweb", "min": 1, "max": 2 }
+  ],
+  "block_tags": [],
+  "loot": {
+    "tables": [
+      "minecraft:chests/stronghold_library"
+    ],
+    "chance": 1.0
+  },
+  "trade": {
+    "profession": null,
+    "level": 0,
+    "max_uses": 0
+  }
+}

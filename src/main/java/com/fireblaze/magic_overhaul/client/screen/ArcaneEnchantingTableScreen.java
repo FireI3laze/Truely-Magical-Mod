@@ -171,9 +171,9 @@ public class ArcaneEnchantingTableScreen extends AbstractContainerScreen<ArcaneE
             }
         }
 
-        controllerIcons.put(blocklistController, new ItemStack(Items.BRICKS));        // Blockliste
+        controllerIcons.put(blocklistController, new ItemStack(Items.ENCHANTING_TABLE)); // Blockliste
         controllerIcons.put(enchantmentController, new ItemStack(Items.ENCHANTED_BOOK)); // Enchantments
-        controllerIcons.put(magicalBarController, new ItemStack(Items.NETHER_STAR));  // Magic Bar
+        controllerIcons.put(magicalBarController, new ItemStack(Items.NETHER_STAR));     // Magic Bar
 
         // ensure components have correct parent coords
         controllers.forEach(c -> c.recalculatePosition(leftPos, topPos, imageWidth, imageHeight));
@@ -274,17 +274,21 @@ public class ArcaneEnchantingTableScreen extends AbstractContainerScreen<ArcaneE
         for (var b : controllerSwitchButtons) if (b.mouseReleased(mouseX, mouseY, button)) return true;
         for (var b : sideSwitchButtons) if (b.mouseReleased(mouseX, mouseY, button)) return true;
         for (var b : sideToggleButtons) if (b.mouseReleased(mouseX, mouseY, button)) return true;
+
+        if (magicalBarController.isVisible() && magicPowerBar.handleMouseRelease(mouseX, mouseY, button)) return true;
+
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (enchantmentController.isVisible() && enchantmentListScreen.mouseClicked(mouseX, mouseY, button)) return true;
-        if (magicalBarController.isVisible() && magicPowerBar.handleMouseClick(mouseX, mouseY, button)) return true;
 
         for (var b : controllerSwitchButtons) if (b.visible && b.mouseClicked(mouseX, mouseY, button)) return true;
         for (var b : sideSwitchButtons) if (b.visible && b.mouseClicked(mouseX, mouseY, button)) return true;
         for (var b : sideToggleButtons) if (b.visible && b.mouseClicked(mouseX, mouseY, button)) return true;
+
+        if (magicalBarController.isVisible() && magicPowerBar.handleMouseClick(mouseX, mouseY, button)) return true;
 
         return super.mouseClicked(mouseX, mouseY, button);
     }

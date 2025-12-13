@@ -1,6 +1,10 @@
 package com.fireblaze.magic_overhaul.client.screen.utils;
 
+import com.fireblaze.magic_overhaul.blockentity.EnchantingTable.MagicAccumulator;
 import com.fireblaze.magic_overhaul.client.ClientConfig;
+import com.fireblaze.magic_overhaul.item.MagicEssenceItem;
+import com.fireblaze.magic_overhaul.network.ConsumeMagicEssencePacket;
+import com.fireblaze.magic_overhaul.network.Network;
 import com.fireblaze.magic_overhaul.util.PlayerSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -22,6 +26,7 @@ public class MagicPowerBar {
     private float magicPowerCapPerPlayerSoft;
     private int magicPowerCapPerPlayerHard;
     private int currentMagicPowerIncreaseRate;
+    private float plannedGain = 0f;
     // Farben-Liste als Feld
     private final List<Integer> particleColors = List.of(
             0xAAFFFFFF, // Weiß
@@ -85,13 +90,13 @@ public class MagicPowerBar {
         int x = controller.getListX();
         int y = controller.getListY();
 
-// Basis-Text
+        // Basis-Text
         String prefix = "Magical Power " + (int) accumulatedMagicPower;
 
-// Zeichne nur den Basis-Text, wenn keine geplante Reduktion existiert
+        // Zeichne nur den Basis-Text, wenn keine geplante Reduktion existiert
         graphics.drawString(font, prefix, x, y, 0xFFFFFF, false);
 
-// Falls geplant, zeichne die Zahl in Klammern
+        // Falls geplant, zeichne die Zahl in Klammern
         if (plannedConsumption != 0) {
             float remaining = accumulatedMagicPower - plannedConsumption;
             String number = "(" + (int) remaining + ")";
@@ -117,6 +122,45 @@ public class MagicPowerBar {
 
         int softWidth = (int) ((magicPowerCapPerPlayerSoft / magicPowerCapPerPlayerHard) * width);
 
+        // --- 0. Preview-Berechnung ---
+        float plannedGainToDraw = 0f;
+        int previewWidth = 0;
+
+        var mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            var carried = mc.player.containerMenu.getCarried();
+            boolean hover =
+                    mouseX >= x && mouseX <= x + width &&
+                            mouseY >= barY && mouseY <= barY + height;
+
+            if (hover && !carried.isEmpty() && carried.getItem() instanceof MagicEssenceItem ess) {
+                boolean charged = carried.hasTag() && carried.getTag().getBoolean(MagicEssenceItem.NBT_CHARGED);
+                if (charged) {
+                    float perEssence = 100f; // TODO: dynamisch
+                    plannedGainToDraw = Math.min(
+                            carried.getCount() * perEssence,
+                            magicPowerCapPerPlayerSoft - accumulatedMagicPower
+                    );
+                }
+            }
+        }
+        if (plannedGainToDraw > 0) {
+            float previewRatio = plannedGainToDraw / magicPowerCapPerPlayerHard;
+            previewWidth = (int) (width * previewRatio);
+
+            /*
+            int start = x + fillWidth;
+            int end   = Math.min(x + fillWidth + previewWidth, x + width);
+
+            graphics.fill(start,
+                    barY,
+                    end,
+                    barY + height,
+                    0x4422FF22); // halbtransparent grün
+
+             */
+        }
+
         // Neue: geplanter Verbrauch
         float plannedRatio = Math.min(plannedConsumption / magicPowerCapPerPlayerHard, 1f);
         int plannedWidth = (int)(width * plannedRatio);
@@ -130,9 +174,8 @@ public class MagicPowerBar {
                     0x44AA0000); // halbtransparent rot
         }
 
-
         // --- 1. Lila Füllung bis Soft Cap mit Animation ---
-        int purpleWidth = Math.min(fillWidth, softWidth);
+        int purpleWidth = Math.min(fillWidth + previewWidth, softWidth);
         double horizontalSpeed = 0.5;
         int timeOffset = (int) ((System.currentTimeMillis() / 100) % 1000000);
         int lineSpacing = 4;
@@ -163,6 +206,21 @@ public class MagicPowerBar {
                     controller.getListX() + fillWidth,
                     controller.getListY() + font.lineHeight + margin + height,
                     0x11AA0000); // halbtransparent rot
+        }
+
+        // --- Zeichne geplanter gain danach -> sieht besser aus
+        if (plannedGainToDraw > 0) {
+            float previewRatio = plannedGainToDraw / magicPowerCapPerPlayerHard;
+            previewWidth = (int) (width * previewRatio);
+
+            int start = x + fillWidth;
+            int end   = Math.min(x + fillWidth + previewWidth, x + width);
+
+            graphics.fill(start,
+                    barY,
+                    end,
+                    barY + height,
+                    0x4222FF22); // halbtransparent grün
         }
 
         if (sparkle) {
@@ -266,6 +324,45 @@ public class MagicPowerBar {
             }
             graphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
         }
+
+        /*
+        // --- 5. Magical Power Gain Indicator ---
+        float plannedGainToDraw = 0f;
+
+        // Prüfe carried Item für Vorschau
+        var mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            var carried = mc.player.containerMenu.getCarried();
+
+            if (!carried.isEmpty() && carried.getItem() instanceof MagicEssenceItem ess) {
+                boolean charged = carried.hasTag() && carried.getTag().getBoolean(MagicEssenceItem.NBT_CHARGED);
+                if (charged) {
+                    int count = carried.getCount();
+                    float perEssence = 100f; // TODO: später dynamisieren
+                    plannedGainToDraw = count * perEssence;
+
+                    plannedGainToDraw = Math.min(
+                            plannedGainToDraw,
+                            magicPowerCapPerPlayerSoft - accumulatedMagicPower
+                    );
+                }
+            }
+        }
+
+        if (plannedGainToDraw > 0) {
+            float previewRatio = plannedGainToDraw / magicPowerCapPerPlayerHard;
+            int previewWidth = (int) (width * previewRatio);
+
+            int start = x + fillWidth;
+            int end   = Math.min(x + fillWidth + previewWidth, x + width);
+
+            graphics.fill(start,
+                    barY,
+                    end,
+                    barY + height,
+                    0x4422FF22); // halbtransparent grün
+        }
+        */
     }
 
     private final List<MagicParticle> particles = new ArrayList<>();
@@ -283,6 +380,20 @@ public class MagicPowerBar {
             this.color = color;
         }
     }
+
+    public boolean handleMouseRelease(double mouseX, double mouseY, int button) {
+        int x = controller.getListX();
+        int y = controller.getListY();
+        int barY = y + font.lineHeight + margin;
+
+        if (mouseX >= x && mouseX <= x + width &&
+                mouseY >= barY && mouseY <= barY + height) {
+            // code
+            return true;
+        }
+        else return false;
+    }
+
     public boolean handleMouseClick(double mouseX, double mouseY, int button) {
         int x = controller.getListX();
         int y = controller.getListY();
@@ -291,16 +402,44 @@ public class MagicPowerBar {
         if (mouseX >= x && mouseX <= x + width &&
                 mouseY >= barY && mouseY <= barY + height) {
 
-            if (button == 0) { // Linksklick
-                motion = !motion;
 
-            } else if (button == 1) { // Rechtsklick
-                sparkle = !sparkle;
+
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc.player != null) {
+                var carried = mc.player.containerMenu.getCarried();
+                if (!carried.isEmpty() && carried.getItem() instanceof MagicEssenceItem) {
+                    var tag = carried.getTag();
+                    boolean charged = tag != null && tag.getBoolean(MagicEssenceItem.NBT_CHARGED);
+                    if (charged) {
+                        int amount;
+                        if (button == 0) {
+                            amount = carried.getCount();
+                        } else if (button == 1) {
+                            amount = 1;
+                        } else {
+                            amount = 0;
+                        }
+
+                        if (amount > 0 && accumulatedMagicPower + amount * 100 <= magicPowerCapPerPlayerSoft) { // todo fix hardcoding "100"
+                            // send packet to server to consume the essence and add magic power
+                            Network.sendToServer(new ConsumeMagicEssencePacket(amount));
+                            return true; // stop further processing of this click
+                        }
+                    }
+                } else {
+                    if (button == 0) { // Linksklick
+                        motion = !motion;
+
+                    } else if (button == 1) { // Rechtsklick
+                        sparkle = !sparkle;
+                    }
+                }
             }
+
+
 
             assert Minecraft.getInstance().player != null;
             cfg.magicBarMotion = motion;
-            ClientConfig.save();
             cfg.magicBarSparkle = sparkle;
             ClientConfig.save();
             return true; // Klick auf die Bar wurde verarbeitet

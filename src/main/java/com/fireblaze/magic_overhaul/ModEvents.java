@@ -2,8 +2,11 @@ package com.fireblaze.magic_overhaul;
 
 import com.fireblaze.magic_overhaul.blockentity.EnchantingTable.ArcaneEnchantingTableBlockEntity;
 import com.fireblaze.magic_overhaul.network.Network;
+import com.fireblaze.magic_overhaul.network.SyncBindingPacket;
+import com.fireblaze.magic_overhaul.network.SyncMagicAccumulatorPacket;
 import com.fireblaze.magic_overhaul.registry.ModEnchantments;
 import com.fireblaze.magic_overhaul.util.BindingManager;
+import com.fireblaze.magic_overhaul.util.ClientBindingState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -37,10 +40,9 @@ public class ModEvents {
     public static void onPlayerLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
-        BlockPos bound = BindingManager.getBoundTable(player);
-        long posLong = bound != null ? bound.asLong() : 0L;
+        BlockPos bound = BindingManager.getBoundTable(event.getEntity());
 
-        Network.sendToClient(player, new Network.SyncBoundTablePacket(posLong));
+        Network.sendToClient(player, new SyncBindingPacket(bound));
     }
 
     /*

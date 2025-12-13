@@ -1,10 +1,13 @@
 package com.fireblaze.magic_overhaul.item;
 
+import com.fireblaze.magic_overhaul.block.MonolithBlock;
 import com.fireblaze.magic_overhaul.blockentity.EnchantingTable.ArcaneEnchantingTableBlockEntity;
 import com.fireblaze.magic_overhaul.blockentity.MonolithBlockEntity;
 import com.fireblaze.magic_overhaul.network.Network;
+import com.fireblaze.magic_overhaul.network.SyncBindingPacket;
 import com.fireblaze.magic_overhaul.registry.ModSounds;
 import com.fireblaze.magic_overhaul.util.BindingManager;
+import com.fireblaze.magic_overhaul.util.ClientBindingState;
 import com.fireblaze.magic_overhaul.util.MagicCostCalculator;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -30,12 +33,17 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
@@ -44,9 +52,12 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.items.ItemStackHandler;
+import org.joml.Matrix4f;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = "magic_overhaul")
@@ -288,6 +299,11 @@ public class WandItem extends Item {
 
         if (getMode(stack) == WandMode.LINK) {
             if(be instanceof MonolithBlockEntity monolith) {
+
+                if (monolith.getBlockState().getValue(MonolithBlock.HALF) == DoubleBlockHalf.UPPER) {
+                    pos = pos.below();
+                }
+
                 if(stack.hasTag() && stack.getTag().contains("linkedMonolith")) {
                     long linked = stack.getTag().getLong("linkedMonolith");
                     BlockPos linkedPos = BlockPos.of(linked);
@@ -330,8 +346,8 @@ public class WandItem extends Item {
                                     Component.literal("Monolith unlinked!"),
                                     true
                             );
+                            table.getLinkedMonolithManager().cleanupInvalidMonoliths(table);
                         }
-
                         return InteractionResult.SUCCESS;
                     }
 
@@ -347,6 +363,7 @@ public class WandItem extends Item {
                                         Component.literal("Monolith linked!"),
                                         true
                                 );
+                                table.getLinkedMonolithManager().cleanupInvalidMonoliths(table);
                             } else {
                                 player.displayClientMessage(
                                         Component.literal("Rune already linked! Monolith at: " +
@@ -393,9 +410,9 @@ public class WandItem extends Item {
     }
 
     private boolean checkBinding(Player player, ArcaneEnchantingTableBlockEntity tableBE, Level level) {
+        if (level.isClientSide) return false;
         if (BindingManager.getBoundTable(player) == null) {
             player.displayClientMessage(Component.literal("Not bound to any table. Switch Wand Mode to toggle Binding"), true);
-            return false;
         }
 
         if (!BindingManager.getBoundTable(player).equals(tableBE.getBlockPos()) && !level.isClientSide) {
@@ -723,16 +740,9 @@ public class WandItem extends Item {
             if (!(stack.getItem() instanceof WandItem)) return;
             if (WandItem.getMode(stack) != WandItem.WandMode.LINK) return;
 
-            BlockPos boundTable = BindingManager.getBoundTable(mc.player);
-            if (boundTable == null) return;
-
-            Level level = mc.player.level();
-            BlockEntity be = level.getBlockEntity(boundTable);
-            if (!(be instanceof ArcaneEnchantingTableBlockEntity tableBE)) return;
 
             Camera camera = event.getCamera();
             PoseStack poseStack = event.getPoseStack();
-            BlockRenderDispatcher dispatcher = mc.getBlockRenderer();
 
             // Buffer hier deklarieren
             MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();
@@ -743,19 +753,31 @@ public class WandItem extends Item {
             RenderSystem.defaultBlendFunc();
             RenderSystem.lineWidth(2f);
 
-            for (BlockPos monolithPos : tableBE.getLinkedMonolithManager().getLinkedMonoliths()) {
-                poseStack.pushPose();
-                poseStack.translate(
-                        monolithPos.getX() - camera.getPosition().x,
-                        monolithPos.getY() - camera.getPosition().y,
-                        monolithPos.getZ() - camera.getPosition().z
-                );
+            BlockPos pos = null;
 
-                VertexConsumer consumer = buffer.getBuffer(RenderType.lines());
-                LevelRenderer.renderLineBox(poseStack, consumer, 0, 0, 0, 1, 3, 1, 0f, 1f, 0f, 0.5f); // 3 Blöcke hoch
-
-                poseStack.popPose();
+            if (stack.getTag() != null) {
+                pos = BlockPos.of(stack.getTag().getLong("linkedMonolith"));
+                renderBoxAroundBlock(poseStack, camera, pos, buffer, 1, 0, 0);
             }
+
+            BlockPos boundTable = ClientBindingState.getBoundTable();
+            if (boundTable == null) return;
+
+            Level level = mc.player.level();
+            BlockEntity be = level.getBlockEntity(boundTable);
+            if (!(be instanceof ArcaneEnchantingTableBlockEntity tableBE)) return;
+
+            List<BlockPos> temp = new ArrayList<>(tableBE.getLinkedMonolithManager().getLinkedMonoliths());
+            if (pos != null) temp.remove(pos);
+
+
+            for (BlockPos monolithPos : temp) {
+                renderBoxAroundBlock(poseStack, camera,monolithPos, buffer, 0, 1, 0);
+            }
+
+
+            // ===========================
+            //if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
 
             // Batch abschließen
             buffer.endBatch(RenderType.lines());
@@ -764,5 +786,28 @@ public class WandItem extends Item {
             RenderSystem.enableDepthTest();
             RenderSystem.disableBlend();
         }
+    }
+    private static void renderBoxAroundBlock(PoseStack poseStack, Camera camera, BlockPos pos, MultiBufferSource.BufferSource buffer, float red, float green, float blue) {
+            poseStack.pushPose();
+                poseStack.translate(
+                        pos.getX() - camera.getPosition().x,
+                        pos.getY() - camera.getPosition().y,
+                        pos.getZ() - camera.getPosition().z
+                );
+
+    VertexConsumer consumer = buffer.getBuffer(RenderType.lines());
+                LevelRenderer.renderLineBox(poseStack, consumer, 0, 0, 0, 1, 3, 1, red, green, blue, 0.5f); // 3 Blöcke hoch
+
+                poseStack.popPose();
+    }
+
+    @Override
+    public void appendHoverText(
+            ItemStack stack,
+            Level level,
+            List<Component> tooltip,
+            TooltipFlag flag
+    ) {
+        tooltip.add(Component.literal("Ctrl + Scroll to toggle Mode").withStyle(ChatFormatting.BLUE));
     }
 }

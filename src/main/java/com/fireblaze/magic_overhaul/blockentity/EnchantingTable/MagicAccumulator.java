@@ -95,8 +95,10 @@ public class MagicAccumulator {
         );
     }
 
-    public void magicEssenceToMagicPower(int amount) {
+    public boolean magicEssenceToMagicPower(int amount) {
+        if (magicPowerCapPerPlayerSoft < magicPowerPerEssence * amount) return false;
         accumulatedMagicPower += magicPowerPerEssence * amount;
+        return true;
     }
 
     public void scan(Level level, BlockPos pos, int scanCap, int radiusCap) {

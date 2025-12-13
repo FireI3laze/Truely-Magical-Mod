@@ -1,0 +1,30 @@
+{
+  "id": "magic_overhaul:desert_pyramid",
+  "color": "#FFA500",
+  "enchantments": [
+    "minecraft:feather_falling",
+    "minecraft:blast_protection",
+    "minecraft:thorns"
+  ],
+  "blocks": [
+    { "block": "minecraft:sandstone", "min": 2, "max": 3 },
+    { "block": "minecraft:orange_terracotta", "min": 2, "max": 3 },
+    { "block": "minecraft:sand", "min": 1, "max": 2 },
+    { "block": "minecraft:red_sand", "min": 1, "max": 2 },
+    { "block": "minecraft:red_sandstone", "min": 2, "max": 3 },
+    { "block": "minecraft:tnt", "min": 5, "max": 5 },
+    { "block": "minecraft:cactus", "min": 5, "max": 5 }
+  ],
+  "block_tags": [],
+  "loot": {
+    "tables": [
+      "minecraft:chests/desert_pyramid"
+    ],
+    "chance": 0.25
+  },
+  "trade": {
+    "profession": null,
+    "level": 0,
+    "max_uses": 0
+  }
+}

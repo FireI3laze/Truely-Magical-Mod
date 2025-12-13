@@ -1,8 +1,11 @@
 package com.fireblaze.magic_overhaul.util;
 
 import com.fireblaze.magic_overhaul.blockentity.EnchantingTable.ArcaneEnchantingTableBlockEntity;
+import com.fireblaze.magic_overhaul.network.Network;
+import com.fireblaze.magic_overhaul.network.SyncBindingPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -22,6 +25,8 @@ public class BindingManager {
         BlockPos pos = table.getBlockPos();
         playerBindings.put(id, pos);
 
+        if (player instanceof ServerPlayer sp) Network.sendToClient(sp, new SyncBindingPacket(pos));
+
         // Direkt in Spieler-NBT speichern
         saveBinding(player, pos);
 
@@ -32,6 +37,8 @@ public class BindingManager {
     public static void unbind(Player player) {
         UUID id = player.getUUID();
         playerBindings.remove(id);
+
+        if (player instanceof ServerPlayer sp) Network.sendToClient(sp, new SyncBindingPacket(null));
 
         // Spieler-NBT zurücksetzen
         player.getPersistentData().remove("boundTable");
@@ -86,6 +93,7 @@ public class BindingManager {
             if (bound != null && bound.equals(tablePos)) {
                 playerBindings.remove(id);                  // Server-Cache
                 player.getPersistentData().remove("boundTable"); // Spieler-NBT
+                if (player instanceof ServerPlayer sp) Network.sendToClient(sp, new SyncBindingPacket(null));
                 player.displayClientMessage(
                         Component.literal("Arcane Enchanting Table at x" + tablePos.getX() + " y" + tablePos.getY() + " z" + tablePos.getZ() + " destroyed. Binding lost"),
                         true // true = nur im Action-Bar anzeigen

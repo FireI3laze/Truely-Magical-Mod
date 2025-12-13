@@ -1,0 +1,28 @@
+{
+  "id": "magic_overhaul:end_city",
+  "color": "#9370DB",
+  "enchantments": [
+    "magic_overhaul:veil_of_eternity"
+  ],
+  "blocks": [
+    { "block": "minecraft:end_stone", "min": 1, "max": 2 },
+    { "block": "minecraft:end_stone_bricks", "min": 2, "max": 3 },
+    { "block": "minecraft:purpur_block", "min": 2, "max": 3 },
+    { "block": "minecraft:purpur_pillar", "min": 2, "max": 3 },
+    { "block": "minecraft:end_rod", "min": 1, "max": 2 },
+    { "block": "minecraft:ender_chest", "min": 900, "max": 900 },
+    { "block": "minecraft:shulker_box", "min": 900, "max": 900 }
+  ],
+  "block_tags": [],
+  "loot": {
+    "tables": [
+      "minecraft:chests/end_city_treasure"
+    ],
+    "chance": 0.5
+  },
+  "trade": {
+    "profession": null,
+    "level": 0,
+    "max_uses": 0
+  }
+}

@@ -24,8 +24,6 @@ public class PlayerSettings {
         modTag.putBoolean(key, value);
         tag.put(TAG_MOD_SETTINGS, modTag);
         persisted.put(Player.PERSISTED_NBT_TAG, tag);
-
-        System.out.println(key + ": " + value + " | Saved");
     }
 
     /**
@@ -36,21 +34,18 @@ public class PlayerSettings {
         CompoundTag persisted = player.getPersistentData();
 
         if (!persisted.contains(Player.PERSISTED_NBT_TAG)) {
-            System.out.println(key + ": " + defaultValue + " | Default 1 Loaded");
             return defaultValue;
         }
 
         CompoundTag tag = persisted.getCompound(Player.PERSISTED_NBT_TAG);
 
         if (!tag.contains(TAG_MOD_SETTINGS)) {
-            System.out.println(key + ": " + defaultValue + " | Default 2 Loaded");
             return defaultValue;
         }
 
         CompoundTag modTag = tag.getCompound(TAG_MOD_SETTINGS);
 
         boolean value = modTag.getBoolean(key);
-        System.out.println(key + ": " + value + " | Data Loaded");
         return value;
     }
 }

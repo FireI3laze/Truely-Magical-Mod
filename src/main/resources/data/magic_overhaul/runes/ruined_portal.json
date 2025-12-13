@@ -1,0 +1,38 @@
+{
+  "id": "magic_overhaul:ruined_portal",
+  "color": "#800080",
+  "enchantments": [
+    "minecraft:fire_aspect",
+    "minecraft:flame",
+    "minecraft:fire_protection",
+    "minecraft:soul_speed"
+  ],
+  "blocks": [
+    { "block": "minecraft:obsidian", "min": 3, "max": 5 },
+    { "block": "minecraft:netherrack", "min": 1, "max": 2 },
+    { "block": "minecraft:nether_wart", "min": 1, "max": 2 },
+    { "block": "minecraft:nether_wart_block", "min": 1, "max": 2 },
+    { "block": "minecraft:nether_bricks", "min": 2, "max": 3 },
+    { "block": "minecraft:crying_obsidian", "min": 3, "max": 4 },
+    { "block": "minecraft:magma_block", "min": 2, "max": 3 },
+    { "block": "minecraft:nether_quartz_ore", "min": 2, "max": 3 },
+    { "block": "minecraft:nether_gold_ore", "min": 900, "max": 900 },
+    { "block": "minecraft:lava", "min": 1, "max": 2 },
+    { "block": "minecraft:crimson_stem", "min": 1, "max": 2 },
+    { "block": "minecraft:warped_stem", "min": 1, "max": 2 },
+    { "block": "minecraft:fire", "min": 1, "max": 2 },
+    { "block": "minecraft:glowstone", "min": 1, "max": 2 }
+  ],
+  "block_tags": [],
+  "loot": {
+    "tables": [
+      "minecraft:chests/ruined_portal"
+    ],
+    "chance": 0.33
+  },
+  "trade": {
+    "profession": null,
+    "level": 0,
+    "max_uses": 0
+  }
+}
