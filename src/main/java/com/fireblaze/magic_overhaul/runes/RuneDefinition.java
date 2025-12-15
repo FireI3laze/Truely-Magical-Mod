@@ -17,6 +17,7 @@ public class RuneDefinition {
 
     public final ResourceLocation id;
     public final int baseColor;
+    public final String displayName;
     public final RuneColorTheme colorTheme;
 
     public final List<Enchantment> enchantments;
@@ -32,6 +33,7 @@ public class RuneDefinition {
     public RuneDefinition(
             ResourceLocation id,
             int baseColor,
+            String displayName,
             List<Enchantment> enchantments,
             List<MagicSourceBlocks> blocks,
             List<MagicSourceBlockTags> blockTags,
@@ -41,6 +43,7 @@ public class RuneDefinition {
     ) {
         this.id = id;
         this.baseColor = baseColor;
+        this.displayName = displayName;
         this.colorTheme = RuneColorTheme.fromBaseColor(baseColor);
 
         // Collections nie null
@@ -62,4 +65,96 @@ public class RuneDefinition {
             this.blockTagsMap.put(b.tag, b);
         }
     }
+
+    public boolean addBlock(Block block, int min, int max) {
+        if (block == null) return false;
+
+        if (blockMap.containsKey(block)) {
+            return false;
+        }
+
+        MagicSourceBlocks entry = new MagicSourceBlocks(block, min, max);
+        blocks.add(entry);
+        blockMap.put(block, entry);
+        return true;
+    }
+
+    public boolean removeBlock(Block block) {
+        MagicSourceBlocks entry = blockMap.remove(block);
+        if (entry == null) {
+            return false;
+        }
+
+        blocks.remove(entry);
+        return true;
+    }
+
+    public boolean addBlockTag(TagKey<Block> tag, int min, int max) {
+        if (tag == null) return false;
+
+        // Schon vorhanden?
+        if (blockTagsMap.containsKey(tag)) {
+            return false;
+        }
+
+        MagicSourceBlockTags entry = new MagicSourceBlockTags(tag, min, max);
+        blockTags.add(entry);
+        blockTagsMap.put(tag, entry);
+
+        return true;
+    }
+
+    public boolean removeBlockTag(TagKey<Block> tag) {
+        if (tag == null) return false;
+
+        MagicSourceBlockTags entry = blockTagsMap.remove(tag);
+        if (entry == null) {
+            return false;
+        }
+
+        blockTags.remove(entry);
+        return true;
+    }
+
+    public boolean editBlock(Block block, int newMin, int newMax) {
+        if (block == null) return false;
+
+        MagicSourceBlocks entry = blockMap.get(block);
+        if (entry == null) return false;
+
+        // Werte updaten
+        entry.magicPower = newMin;
+        entry.magicCap = newMax;
+
+        // Die List bleibt konsistent, da entry ein Referenzobjekt ist
+        return true;
+    }
+
+    public boolean editBlockTag(TagKey<Block> tag, int newMin, int newMax) {
+        if (tag == null) return false;
+
+        MagicSourceBlockTags entry = blockTagsMap.get(tag);
+        if (entry == null) return false;
+
+        // Werte updaten
+        entry.magicPower = newMin;
+        entry.magicCap = newMax;
+
+        // List bleibt konsistent
+        return true;
+    }
+
+    public boolean addEnchantment(Enchantment enchantment) {
+        if (enchantment == null || enchantments.contains(enchantment)) return false;
+
+        enchantments.add(enchantment);
+        return true;
+    }
+
+    public boolean removeEnchantment(Enchantment enchantment) {
+        if (enchantment == null) return false;
+
+        return enchantments.remove(enchantment);
+    }
+
 }

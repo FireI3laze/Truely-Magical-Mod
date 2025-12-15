@@ -239,7 +239,7 @@ public class ArcaneEnchantingTableBlockEntity extends BlockEntity {
                 scanCap, radiusCap
         );
 
-        accumulator.scan(level, this.worldPosition, 300, 25);
+        accumulator.scan(level, this.worldPosition, 3000, 25);
         setChanged();
 
         return accumulator.getCurrentMagicPowerIncreaseRate();
@@ -385,7 +385,7 @@ public class ArcaneEnchantingTableBlockEntity extends BlockEntity {
 
             this.getOrComputeMonolithMagic((ServerLevel) level);
             this.getMagicAccumulator().updateMaxMagic(this);
-            scanSurroundingBlocks(300, 25);
+            scanSurroundingBlocks(3000, 25);
         }
     }
 

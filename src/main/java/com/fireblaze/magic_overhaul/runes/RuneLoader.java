@@ -8,12 +8,20 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class RuneLoader {
 
     public static final Map<String, RuneDefinition> RUNE_DEFINITIONS = new HashMap<>();
+
+    public static void reloadRunes(File runesDir, String modid) {
+        loadRunes(runesDir, modid);
+    }
 
     public static void loadRunes(File runesDir, String modid) {
         RUNE_DEFINITIONS.clear();
@@ -39,6 +47,54 @@ public class RuneLoader {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public static void ensureDefaultRunes(File runesDir, String modid) {
+
+        // 🔑 WICHTIG: Nur beim allerersten Start
+        if (runesDir.exists()) {
+            return;
+        }
+
+        runesDir.mkdirs();
+
+        try {
+            String[] defaults = {
+                    "ancient_city.json",
+                    "buried_treasure.json",
+                    "desert_pyramid.json",
+                    "end_city.json",
+                    "igloo.json",
+                    "jungle_pyramid.json",
+                    "mineshaft.json",
+                    "outpost.json",
+                    "ruined_portal.json",
+                    "shipwreck.json",
+                    "spawner_room.json",
+                    "stronghold.json",
+                    "underwater_ruin.json",
+                    "village.json"
+            };
+
+            for (String fileName : defaults) {
+                String path = "data/" + modid + "/runes/" + fileName;
+
+                try (InputStream in = RuneLoader.class
+                        .getClassLoader()
+                        .getResourceAsStream(path)) {
+
+                    if (in == null) {
+                        System.err.println("Missing default rune: " + path);
+                        continue;
+                    }
+
+                    File outFile = new File(runesDir, fileName);
+                    Files.copy(in, outFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

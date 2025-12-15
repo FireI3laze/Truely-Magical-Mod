@@ -57,7 +57,6 @@ public class EnchantmentListScreen {
     // ---------------------------
     public void render(GuiGraphics gui, int mouseX, int mouseY) {
         var visibleEntries = computeVisibleEntries();
-
         visibleEntries.sort(Comparator.comparingInt(BlocklistScreen::getRegistrySortId));
 
         int listX = controller.getListX();
@@ -66,6 +65,41 @@ public class EnchantmentListScreen {
 
         int totalRows = visibleEntries.size();
         if (scrollOffset > totalRows - visibleRows) scrollOffset = Math.max(totalRows - visibleRows, 0);
+
+        if (visibleEntries.isEmpty()) {
+            int areaWidth = listWidth - 8; // kleiner Padding-Rand
+            int areaHeight = visibleRows * rowHeight;
+
+            Component text = Component.literal(
+                    """
+                            No Enchantments unlocked.
+
+                            Use a wand to bind yourself to the table and link it with monoliths to unlock enchantments."""
+            );
+
+            // Automatischer Zeilenumbruch basierend auf Controller-Breite
+            List<net.minecraft.util.FormattedCharSequence> lines = font.split(text, areaWidth);
+
+            int totalTextHeight = lines.size() * font.lineHeight;
+            int startY = listY + (areaHeight - totalTextHeight) / 2;
+
+            int y = startY;
+            for (var line : lines) {
+                int lineWidth = font.width(line);
+                int x = listX + (listWidth - lineWidth) / 2;
+
+                gui.drawString(
+                        font,
+                        line,
+                        x,
+                        y,
+                        0xAAAAAA,
+                        false
+                );
+                y += font.lineHeight;
+            }
+            return;
+        }
 
         for (int visibleIndex = 0; visibleIndex < visibleRows; visibleIndex++) {
             int entryIndex = visibleIndex + scrollOffset;

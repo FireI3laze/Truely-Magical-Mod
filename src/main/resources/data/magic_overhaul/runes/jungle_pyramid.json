@@ -6,13 +6,15 @@
     "minecraft:knockback"
   ],
   "blocks": [
-    { "block": "minecraft:jungle_log", "min": 2, "max": 3 },
-    { "block": "minecraft:jungle_planks", "min": 2, "max": 3 },
-    { "block": "minecraft:vine", "min": 1, "max": 2 },
-    { "block": "minecraft:cobweb", "min": 2000, "max": 2000 },
-    { "block": "minecraft:mossy_cobblestone", "min": 2, "max": 3 },
-    { "block": "minecraft:melon", "min": 2, "max": 3 },
-    { "block": "minecraft:bamboo", "min": 2, "max": 3 }
+    { "block": "minecraft:jungle_log", "min": 2, "max": 150 },
+    { "block": "minecraft:vine", "min": 3, "max": 50 },
+    { "block": "minecraft:cobweb", "min": 10, "max": 100 },
+    { "block": "minecraft:mossy_cobblestone", "min": 2, "max": 150 },
+    { "block": "minecraft:sticky_piston", "min": 25, "max": 100 },
+    { "block": "minecraft:cobblestone", "min": 1, "max": 150 },
+    { "block": "minecraft:dispenser", "min": 10, "max": 50 },
+    { "block": "minecraft:melon", "min": 10, "max": 50 },
+    { "block": "minecraft:bamboo", "min": 1, "max": 50 }
   ],
   "block_tags": [],
   "loot": {

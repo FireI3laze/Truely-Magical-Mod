@@ -61,17 +61,13 @@ public class ArcaneEnchantingTableBlock extends Block implements EntityBlock {
             // --- 1. Berechnung der Magic-Werte ---
             Map<BlockPos, CachedMagicResult> data = tableBE.getOrComputeMonolithMagic((ServerLevel) level);
 
-            if (data.isEmpty()) {
-                player.sendSystemMessage(Component.literal("No enchantments unlocked yet."));
-            }
-
             // --- 2. Zusammenführen aller freigeschalteten Enchantments ---
             Map<Enchantment, Integer> unlocked = new HashMap<>();
             for (var result : data.values()) {
                 unlocked.putAll(result.unlockedLevels);
             }
 
-            tableBE.scanSurroundingBlocks(300, 25);
+            tableBE.scanSurroundingBlocks(3000, 25);
             tableBE.getMagicAccumulator().updateMaxMagic(tableBE);
 
             SyncMagicAccumulatorPacket.sendToClient(serverPlayer, tableBE.getBlockPos(), tableBE.getMagicAccumulator()); // Packet for the accumulated magic

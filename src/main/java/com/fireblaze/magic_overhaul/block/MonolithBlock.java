@@ -29,6 +29,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,6 +50,13 @@ public class MonolithBlock extends Block implements EntityBlock {
                 .setValue(HALF, DoubleBlockHalf.LOWER)
                 .setValue(LIGHT, 0));
 
+    }
+
+    private static final VoxelShape SHAPE = Block.box(4, 0, 4, 12, 16, 12);
+
+    @Override
+    public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
+        return SHAPE;
     }
 
     @Override
@@ -131,16 +140,12 @@ public class MonolithBlock extends Block implements EntityBlock {
             MonolithBlockEntity be = getBE(level, pos);
             assert be != null;
 
-            int magicPower = be.scanSurroundingBlocks(300, 25);
+            int magicPower = be.scanSurroundingBlocks(3000, 25);
             //MagicOverhaul.LOGGER.debug("Monolith scanned magic power: {}", magicPower);
 
             // --- Alle Enchantments der Rune berechnen ---
             RuneDefinition runeDef = be.getCurrentRune();
-            if (runeDef != null) {
-                player.sendSystemMessage(Component.literal("§bMagical Energy: §f" + magicPower));
-            } else {
-                player.sendSystemMessage(Component.literal("§cNo Rune set."));
-            }
+            //if (runeDef == null) player.sendSystemMessage(Component.literal("§cNo Rune set."));
 
             if (player instanceof ServerPlayer serverPlayer) {
                 SyncMagicAccumulatorPacket.sendToClient(serverPlayer, be.getBlockPos(), be.getMagicAccumulator());

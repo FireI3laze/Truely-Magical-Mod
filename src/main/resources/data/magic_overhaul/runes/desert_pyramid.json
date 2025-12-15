@@ -7,15 +7,59 @@
     "minecraft:thorns"
   ],
   "blocks": [
-    { "block": "minecraft:sandstone", "min": 2, "max": 3 },
-    { "block": "minecraft:orange_terracotta", "min": 2, "max": 3 },
-    { "block": "minecraft:sand", "min": 1, "max": 2 },
-    { "block": "minecraft:red_sand", "min": 1, "max": 2 },
-    { "block": "minecraft:red_sandstone", "min": 2, "max": 3 },
-    { "block": "minecraft:tnt", "min": 5, "max": 5 },
-    { "block": "minecraft:cactus", "min": 5, "max": 5 }
+    {
+      "block": "minecraft:orange_terracotta",
+      "min": 5,
+      "max": 50
+    },
+    {
+      "block": "minecraft:blue_terracotta",
+      "min": 5,
+      "max": 50
+    },
+    {
+      "block": "minecraft:tnt",
+      "min": 5,
+      "max": 50
+    },
+    {
+      "block": "minecraft:cactus",
+      "min": 2,
+      "max": 60
+    },
+    {
+      "block": "minecraft:chiseled_sandstone",
+      "min": 5,
+      "max": 50
+    },
+    {
+      "block": "minecraft:chest",
+      "min": 5,
+      "max": 50
+    }
   ],
-  "block_tags": [],
+  "block_tags": [
+    {
+      "tag": "minecraft:sand",
+      "min": 1,
+      "max": 200
+    },
+    {
+      "tag": "forge:sandstone",
+      "min": 1,
+      "max": 200
+    },
+    {
+      "tag": "minecraft:pressure_plates",
+      "min": 5,
+      "max": 20
+    },
+    {
+      "tag": "minecraft:trapdoors",
+      "min": 5,
+      "max": 20
+    }
+  ],
   "loot": {
     "tables": [
       "minecraft:chests/desert_pyramid"

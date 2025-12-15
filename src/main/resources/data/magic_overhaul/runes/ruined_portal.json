@@ -8,20 +8,81 @@
     "minecraft:soul_speed"
   ],
   "blocks": [
-    { "block": "minecraft:obsidian", "min": 3, "max": 5 },
-    { "block": "minecraft:netherrack", "min": 1, "max": 2 },
-    { "block": "minecraft:nether_wart", "min": 1, "max": 2 },
-    { "block": "minecraft:nether_wart_block", "min": 1, "max": 2 },
-    { "block": "minecraft:nether_bricks", "min": 2, "max": 3 },
-    { "block": "minecraft:crying_obsidian", "min": 3, "max": 4 },
-    { "block": "minecraft:magma_block", "min": 2, "max": 3 },
-    { "block": "minecraft:nether_quartz_ore", "min": 2, "max": 3 },
-    { "block": "minecraft:nether_gold_ore", "min": 900, "max": 900 },
-    { "block": "minecraft:lava", "min": 1, "max": 2 },
-    { "block": "minecraft:crimson_stem", "min": 1, "max": 2 },
-    { "block": "minecraft:warped_stem", "min": 1, "max": 2 },
-    { "block": "minecraft:fire", "min": 1, "max": 2 },
-    { "block": "minecraft:glowstone", "min": 1, "max": 2 }
+    {
+      "block": "minecraft:obsidian",
+      "min": 4,
+      "max": 200
+    },
+    {
+      "block": "minecraft:netherrack",
+      "min": 1,
+      "max": 300
+    },
+    {
+      "block": "minecraft:nether_wart",
+      "min": 2,
+      "max": 100
+    },
+    {
+      "block": "minecraft:nether_wart_block",
+      "min": 4,
+      "max": 50
+    },
+    {
+      "block": "minecraft:nether_bricks",
+      "min": 2,
+      "max": 200
+    },
+    {
+      "block": "minecraft:crying_obsidian",
+      "min": 5,
+      "max": 150
+    },
+    {
+      "block": "minecraft:magma_block",
+      "min": 2,
+      "max": 100
+    },
+    {
+      "block": "minecraft:nether_quartz_ore",
+      "min": 5,
+      "max": 100
+    },
+    {
+      "block": "minecraft:nether_gold_ore",
+      "min": 5,
+      "max": 100
+    },
+    {
+      "block": "minecraft:lava",
+      "min": 1,
+      "max": 200
+    },
+    {
+      "block": "minecraft:crimson_stem",
+      "min": 2,
+      "max": 150
+    },
+    {
+      "block": "minecraft:warped_stem",
+      "min": 2,
+      "max": 150
+    },
+    {
+      "block": "minecraft:fire",
+      "min": 5,
+      "max": 100
+    },
+    {
+      "block": "minecraft:glowstone",
+      "min": 4,
+      "max": 200
+    },
+    {
+      "block": "minecraft:soul_sand",
+      "min": 1,
+      "max": 200
+    }
   ],
   "block_tags": [],
   "loot": {

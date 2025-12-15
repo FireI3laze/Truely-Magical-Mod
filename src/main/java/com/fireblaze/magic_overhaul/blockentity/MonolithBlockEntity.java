@@ -254,7 +254,7 @@ public class MonolithBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public int calculateCurrentMagicPower() {
-        currentMagicPower = scanSurroundingBlocks(300, 25);
+        currentMagicPower = scanSurroundingBlocks(3000, 25);
         return currentMagicPower;
     }
     public int getCurrentMagicPower() {

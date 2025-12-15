@@ -5,8 +5,8 @@ import net.minecraft.world.level.block.Block;
 
 public class MagicSourceBlockTags {
     public final TagKey<Block> tag;
-    public final int magicPower;
-    public final int magicCap;
+    public int magicPower;
+    public int magicCap;
 
     public MagicSourceBlockTags(TagKey<Block> tag, int magicPower, int magicCap) {
         this.tag = tag;

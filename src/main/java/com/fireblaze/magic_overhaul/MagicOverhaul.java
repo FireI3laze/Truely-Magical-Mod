@@ -1,6 +1,7 @@
 package com.fireblaze.magic_overhaul;
 
 import com.fireblaze.magic_overhaul.client.renderer.ArcaneEnchantingTableRenderer;
+import com.fireblaze.magic_overhaul.command.RuneCommand;
 import com.fireblaze.magic_overhaul.network.Network;
 import com.fireblaze.magic_overhaul.registry.*;
 import com.fireblaze.magic_overhaul.client.screen.MonolithScreen;
@@ -10,10 +11,12 @@ import com.fireblaze.magic_overhaul.runes.RuneLoader;
 import com.fireblaze.magic_overhaul.util.Registration;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.commands.Commands;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -25,6 +28,9 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(MagicOverhaul.MODID)
@@ -67,17 +73,35 @@ public class MagicOverhaul
     private void commonSetup(final FMLCommonSetupEvent event) {
         Network.register();
 
-        // Config-Ordner für Runen
-        File runesDir = new File(FMLPaths.CONFIGDIR.get().toFile(), "truly_enchanting/runes");
+        event.enqueueWork(() -> {
+            File runesDir = new File(
+                    FMLPaths.CONFIGDIR.get().toFile(),
+                    "truly_enchanting/runes"
+            );
 
-        // Runen laden – hier ModID angeben (z.B. "truly_enchanting")
-        RuneLoader.loadRunes(runesDir, "magic_overhaul");
+            // 1) Default-Runen kopieren (falls nötig)
+            RuneLoader.ensureDefaultRunes(runesDir, "magic_overhaul");
+
+            // 2) Runen aus Config laden
+            RuneLoader.loadRunes(runesDir, "magic_overhaul");
+        });
     }
+
 
     // Add the example block item to the building blocks tab
     private void addCreative(BuildCreativeModeTabContentsEvent event)
     {
 
+    }
+
+    @Mod.EventBusSubscriber(modid = MagicOverhaul.MODID)
+    public class CommandEvents {
+        @SubscribeEvent
+        public static void onRegisterCommands(RegisterCommandsEvent event) {
+            event.getDispatcher().register(
+                    RuneCommand.build() // build liefert "rune" + "give" + argument
+            );
+        }
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call

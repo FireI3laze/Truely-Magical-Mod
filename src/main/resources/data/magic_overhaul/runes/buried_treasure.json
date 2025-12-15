@@ -6,17 +6,17 @@
     "minecraft:lure"
   ],
   "blocks": [
-    { "block": "minecraft:sand", "min": 1, "max": 2 },
-    { "block": "minecraft:gravel", "min": 1, "max": 2 },
-    { "block": "minecraft:chest", "min": 3, "max": 4 },
-    { "block": "minecraft:water", "min": 2, "max": 3 },
-    { "block": "minecraft:kelp", "min": 1, "max": 2 }
+    { "block": "minecraft:sand", "min": 1, "max": 100 },
+    { "block": "minecraft:gravel", "min": 1, "max": 100 },
+    { "block": "minecraft:chest", "min": 10, "max": 20 },
+    { "block": "minecraft:water", "min": 1, "max": 100 },
+    { "block": "minecraft:kelp", "min": 1, "max": 100 }
   ],
   "block_tags": [
-    { "tag": "minecraft:coral_blocks", "min": 1, "max": 50 },
-    { "tag": "minecraft:corals", "min": 1, "max": 150 },
-    { "tag": "minecraft:coral_plants", "min": 2, "max": 20 },
-    { "tag": "minecraft:wall_corals", "min": 2, "max": 20 }
+    { "tag": "minecraft:coral_blocks", "min": 5, "max": 200 },
+    { "tag": "minecraft:corals", "min": 5, "max": 100 },
+    { "tag": "minecraft:coral_plants", "min": 5, "max": 100 },
+    { "tag": "minecraft:wall_corals", "min": 5, "max": 100 }
   ],
   "structures": [
     "minecraft:buried_treasure"

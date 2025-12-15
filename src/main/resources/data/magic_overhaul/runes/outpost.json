@@ -8,12 +8,51 @@
     "minecraft:quick_charge"
   ],
   "blocks": [
-    { "block": "minecraft:dark_oak_log", "min": 2, "max": 3 },
-    { "block": "minecraft:dark_oak_planks", "min": 2, "max": 3 },
-    { "block": "minecraft:campfire", "min": 3, "max": 4 },
-    { "block": "minecraft:sandstone", "min": 1, "max": 2 },
-    { "block": "minecraft:jack_o_lantern", "min": 100, "max": 600 },
-    { "block": "minecraft:pumpkin", "min": 2, "max": 3 }
+    {
+      "block": "minecraft:target",
+      "min": 10,
+      "max": 50
+    },
+    {
+      "block": "minecraft:pumpkin",
+      "min": 4,
+      "max": 50
+    },
+    {
+      "block": "minecraft:jack_o_lantern",
+      "min": 4,
+      "max": 50
+    },
+    {
+      "block": "minecraft:dark_oak_log",
+      "min": 2,
+      "max": 150
+    },
+    {
+      "block": "minecraft:dark_oak_planks",
+      "min": 1,
+      "max": 150
+    },
+    {
+      "block": "minecraft:birch_planks",
+      "min": 1,
+      "max": 100
+    },
+    {
+      "block": "minecraft:cobblestone",
+      "min": 1,
+      "max": 100
+    },
+    {
+      "block": "minecraft:campfire",
+      "min": 5,
+      "max": 30
+    },
+    {
+      "block": "minecraft:dark_oak_fence",
+      "min": 3,
+      "max": 60
+    }
   ],
   "block_tags": [],
   "loot": {

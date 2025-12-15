@@ -22,17 +22,16 @@ public class ModRunes {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, MagicOverhaul.MODID);
 
-    public static final RegistryObject<Item> RUNE =
-            ITEMS.register("rune", RuneItem::new);
+    public static final RegistryObject<Item> RUNE = ITEMS.register("rune", RuneItem::new);
 
     public static final Map<String, RuneDefinition> RUNE_DEFINITIONS = new HashMap<>();
 
+    /*
     public static RuneDefinition getRuneDefinition(String id) {
         return RUNE_DEFINITIONS.get(id);
     }
 
 
-    /*
     public static final EnumMap<RuneType, RegistryObject<Item>> RUNES =
             new EnumMap<>(RuneType.class);
 
@@ -49,7 +48,6 @@ public class ModRunes {
         RegistryObject<Item> ro = RUNES.get(type);
         return ro != null ? ro.get() : null;
     }
-    */
 
     public static void loadAllRunes(MinecraftServer server) {
         RUNE_DEFINITIONS.clear();
@@ -79,4 +77,5 @@ public class ModRunes {
             }
         }
     }
+    */
 }

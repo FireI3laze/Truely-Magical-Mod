@@ -187,6 +187,7 @@ public class WandItem extends Item {
         Player player = context.getPlayer();
         BlockEntity be = level.getBlockEntity(pos);
         ItemStack stack = context.getItemInHand();
+        assert player != null;
 
         if (getMode(stack) == WandMode.ENCHANT) {
             if (be instanceof ArcaneEnchantingTableBlockEntity tableBE) {
@@ -355,6 +356,15 @@ public class WandItem extends Item {
                     BlockEntity linkedBE = level.getBlockEntity(linkedPos);
                     if (linkedBE instanceof MonolithBlockEntity linkedMonolith) {
 
+                        if (linkedMonolith.getCurrentRune() == null) { //todo nicht null sondern rune tag filter
+                            player.displayClientMessage(
+                                    Component.literal("Monolith has no rune"),
+                                    true
+                            );
+
+                            return InteractionResult.SUCCESS;
+                        }
+
                         boolean added = table.linkMonolith(linkedMonolith);
 
                         if (!level.isClientSide) {
@@ -373,10 +383,10 @@ public class WandItem extends Item {
                                         true
                                 );
                             }
+
+                            return InteractionResult.SUCCESS;
                         }
                     }
-
-                    return InteractionResult.SUCCESS;
                 }
             }
         }
@@ -415,7 +425,7 @@ public class WandItem extends Item {
             player.displayClientMessage(Component.literal("Not bound to any table. Switch Wand Mode to toggle Binding"), true);
         }
 
-        if (!BindingManager.getBoundTable(player).equals(tableBE.getBlockPos()) && !level.isClientSide) {
+        else if (!BindingManager.getBoundTable(player).equals(tableBE.getBlockPos()) && !level.isClientSide) {
             player.displayClientMessage(Component.literal("Not bound to this table. Switch Wand Mode to toggle Binding"), true);
             return false;
         }

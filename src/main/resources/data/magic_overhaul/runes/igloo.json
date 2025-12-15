@@ -5,13 +5,18 @@
     "minecraft:frost_walker"
   ],
   "blocks": [
-    { "block": "minecraft:snow_block", "min": 2, "max": 3 },
-    { "block": "minecraft:ice", "min": 2, "max": 3 },
-    { "block": "minecraft:blue_ice", "min": 2, "max": 3 },
-    { "block": "minecraft:packed_ice", "min": 50, "max": 600 },
-    { "block": "minecraft:snow", "min": 1, "max": 2 },
-    { "block": "minecraft:spruce_log", "min": 2, "max": 3 },
-    { "block": "minecraft:spruce_planks", "min": 1, "max": 2 }
+    { "block": "minecraft:snow_block", "min": 1, "max": 200 },
+    { "block": "minecraft:ice", "min": 1, "max": 200 },
+    { "block": "minecraft:blue_ice", "min": 4, "max": 300 },
+    { "block": "minecraft:packed_ice", "min": 2, "max": 200 },
+    { "block": "minecraft:snow", "min": 1, "max": 150 },
+    { "block": "minecraft:mossy_stone_bricks", "min": 1, "max": 150 },
+    { "block": "minecraft:stone_bricks", "min": 1, "max": 150 },
+    { "block": "minecraft:brewing_stand", "min": 25, "max": 50 },
+    { "block": "minecraft:cauldron", "min": 25, "max": 50 },
+    { "block": "minecraft:iron_bars", "min": 3, "max": 60 },
+    { "block": "minecraft:red_bed", "min": 5, "max": 50 },
+    { "block": "minecraft:ladder", "min": 3, "max": 90 }
   ],
   "block_tags": [],
   "loot": {

@@ -6,23 +6,93 @@
     "minecraft:swift_sneak"
   ],
   "blocks": [
-    { "block": "minecraft:sculk", "min": 4, "max": 5 },
-    { "block": "minecraft:sculk_vein", "min": 4, "max": 5 },
-    { "block": "minecraft:sculk_catalyst", "min": 4, "max": 5 },
-    { "block": "minecraft:sculk_sensor", "min": 3, "max": 4 },
-    { "block": "minecraft:sculk_shrieker", "min": 4, "max": 5 },
-    { "block": "minecraft:deepslate", "min": 2, "max": 3 },
-    { "block": "minecraft:calcite", "min": 1, "max": 2 },
-    { "block": "minecraft:blackstone", "min": 2, "max": 3 },
-    { "block": "minecraft:soul_campfire", "min": 1, "max": 2 },
-    { "block": "minecraft:soul_fire", "min": 1, "max": 2 },
-    { "block": "minecraft:soul_lantern", "min": 1, "max": 2 },
-    { "block": "minecraft:soul_torch", "min": 1, "max": 2 },
-    { "block": "minecraft:reinforced_deepslate", "min": 200, "max": 1000 }
+    {
+      "block": "minecraft:sculk",
+      "min": 3,
+      "max": 150
+    },
+    {
+      "block": "minecraft:sculk_vein",
+      "min": 3,
+      "max": 120
+    },
+    {
+      "block": "minecraft:sculk_catalyst",
+      "min": 10,
+      "max": 150
+    },
+    {
+      "block": "minecraft:sculk_sensor",
+      "min": 16,
+      "max": 160
+    },
+    {
+      "block": "minecraft:sculk_shrieker",
+      "min": 16,
+      "max": 160
+    },
+    {
+      "block": "minecraft:deepslate",
+      "min": 1,
+      "max": 300
+    },
+    {
+      "block": "minecraft:cobbled_deepslate",
+      "min": 1,
+      "max": 200
+    },
+    {
+      "block": "minecraft:deepslate_tiles",
+      "min": 2,
+      "max": 200
+    },
+    {
+      "block": "minecraft:deepslate_bricks",
+      "min": 2,
+      "max": 200
+    },
+    {
+      "block": "minecraft:soul_sand",
+      "min": 2,
+      "max": 50
+    },
+    {
+      "block": "minecraft:soul_lantern",
+      "min": 5,
+      "max": 150
+    },
+    {
+      "block": "minecraft:reinforced_deepslate",
+      "min": 100,
+      "max": 500
+    },
+    {
+      "block": "minecraft:soul_campfire",
+      "min": 10,
+      "max": 100
+    },
+    {
+      "block": "minecraft:soul_fire",
+      "min": 10,
+      "max": 100
+    },
+    {
+      "block": "minecraft:polished_deepslate",
+      "min": 1,
+      "max": 200
+    }
   ],
   "block_tags": [
-    { "tag": "minecraft:wool", "min": 4, "max": 5 },
-    { "tag": "minecraft:candles", "min": 4, "max": 5 }
+    {
+      "tag": "minecraft:wool",
+      "min": 2,
+      "max": 200
+    },
+    {
+      "tag": "minecraft:candles",
+      "min": 4,
+      "max": 200
+    }
   ],
   "loot": {
     "tables": [

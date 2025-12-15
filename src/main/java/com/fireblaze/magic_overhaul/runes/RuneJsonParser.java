@@ -28,6 +28,10 @@ public class RuneJsonParser {
                 json.get("color").getAsString().substring(1), 16
         );
 
+        String translationKey = json.has("name")
+                ? json.get("name").getAsString()
+                : "rune." + id.getNamespace() + "." + id.getPath();
+
         List<Enchantment> enchantments = parseEnchantments(json);
         List<MagicSourceBlocks> blocks = parseBlocks(json);
         List<MagicSourceBlockTags> blockTags = parseBlockTags(json);
@@ -35,9 +39,11 @@ public class RuneJsonParser {
 
         RuneLoot loot = parseLoot(json);
         RuneTrade trade = parseTrade(json);
+        String displayName = humanizeId(id) + " Rune";   // Name direkt aus der ID
         return new RuneDefinition(
                 id,
                 color,
+                displayName,
                 enchantments,
                 blocks,
                 blockTags,
@@ -45,6 +51,16 @@ public class RuneJsonParser {
                 loot,
                 trade
         );
+
+    }
+
+    public static String humanizeId(ResourceLocation id) {
+        String path = id.getPath();               // z.B. "ancient_city"
+        String[] parts = path.split("_");         // ["ancient", "city"]
+        for (int i = 0; i < parts.length; i++) {
+            parts[i] = parts[i].substring(0,1).toUpperCase() + parts[i].substring(1);
+        }
+        return String.join(" ", parts);           // "Ancient City"
     }
 
     /* -------------------------

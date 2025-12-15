@@ -4,7 +4,6 @@ import com.fireblaze.magic_overhaul.MagicOverhaul;
 import com.fireblaze.magic_overhaul.block.MonolithBlock;
 import com.fireblaze.magic_overhaul.blockentity.MonolithBlockEntity;
 import com.fireblaze.magic_overhaul.registry.ModBlocks;
-import com.fireblaze.magic_overhaul.runes.RuneType;
 import com.fireblaze.magic_overhaul.registry.ModRunes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

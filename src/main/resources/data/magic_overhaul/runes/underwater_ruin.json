@@ -8,12 +8,51 @@
     "minecraft:loyalty"
   ],
   "blocks": [
-    { "block": "minecraft:prismarine", "min": 3, "max": 4 },
-    { "block": "minecraft:prismarine_bricks", "min": 3, "max": 4 },
-    { "block": "minecraft:dark_prismarine", "min": 4, "max": 5 },
-    { "block": "minecraft:sea_lantern", "min": 3, "max": 4 },
-    { "block": "minecraft:kelp", "min": 1, "max": 2 },
-    { "block": "minecraft:water", "min": 1, "max": 2 }
+    {
+      "block": "minecraft:prismarine",
+      "min": 2,
+      "max": 100
+    },
+    {
+      "block": "minecraft:prismarine_bricks",
+      "min": 2,
+      "max": 100
+    },
+    {
+      "block": "minecraft:dark_prismarine",
+      "min": 4,
+      "max": 100
+    },
+    {
+      "block": "minecraft:sea_lantern",
+      "min": 5,
+      "max": 50
+    },
+    {
+      "block": "minecraft:kelp",
+      "min": 1,
+      "max": 200
+    },
+    {
+      "block": "minecraft:water",
+      "min": 1,
+      "max": 200
+    },
+    {
+      "block": "minecraft:cut_sandstone",
+      "min": 2,
+      "max": 50
+    },
+    {
+      "block": "minecraft:sand",
+      "min": 1,
+      "max": 100
+    },
+    {
+      "block": "minecraft:gravel",
+      "min": 1,
+      "max": 100
+    }
   ],
   "block_tags": [],
   "loot": {
