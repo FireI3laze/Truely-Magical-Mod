@@ -1,0 +1,28 @@
+{
+  "beam_loop": {
+    "sounds": [
+      {
+        "name": "truly_enchanting:beam_loop",
+        "stream": false
+      }
+    ]
+  },
+
+  "magic_explosion": {
+    "sounds": [
+      {
+        "name": "truly_enchanting:magic_explosion",
+        "stream": false
+      }
+    ]
+  },
+
+  "bad_omen": {
+    "sounds": [
+      {
+        "name": "truly_enchanting:bad_omen",
+        "stream": false
+      }
+    ]
+  }
+}

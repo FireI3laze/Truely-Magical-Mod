@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "half=lower": { "model": "truly_enchanting:block/monolith_lower" },
+    "half=upper": { "model": "truly_enchanting:block/monolith_upper" }
+  }
+}
