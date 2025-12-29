@@ -11,6 +11,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -27,10 +28,13 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
 public class MonolithBlock extends Block implements EntityBlock {
     // Ganz oben in deiner Block-Klasse
     public static final IntegerProperty LIGHT = IntegerProperty.create("light", 0, 15);
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
 
     public static final net.minecraft.world.level.block.state.properties.EnumProperty<DoubleBlockHalf> HALF =
@@ -53,16 +57,19 @@ public class MonolithBlock extends Block implements EntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(HALF, LIGHT);
+        builder.add(HALF, LIGHT, FACING);
     }
 
     @Override
-    public BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext ctx) {
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
         BlockPos pos = ctx.getClickedPos();
         Level level = ctx.getLevel();
+        Direction playerFacing = ctx.getHorizontalDirection().getOpposite(); // Spieler blickt -> Block schaut zu Spieler
 
         if (pos.getY() < level.getMaxBuildHeight() - 1 && level.getBlockState(pos.above()).isAir()) {
-            return defaultBlockState().setValue(HALF, DoubleBlockHalf.LOWER);
+            return defaultBlockState()
+                    .setValue(HALF, DoubleBlockHalf.LOWER)
+                    .setValue(FACING, playerFacing);
         } else {
             return null;
         }
@@ -76,7 +83,11 @@ public class MonolithBlock extends Block implements EntityBlock {
         if (!level.isClientSide) {
             BlockPos above = pos.above();
             if (level.getBlockState(above).isAir()) {
-                level.setBlock(above, defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER).setValue(LIGHT, state.getValue(LIGHT)), 3);
+                BlockState upperState = defaultBlockState()
+                        .setValue(HALF, DoubleBlockHalf.UPPER)
+                        .setValue(FACING, state.getValue(FACING))
+                        .setValue(LIGHT, state.getValue(LIGHT));
+                level.setBlock(above, upperState, 3);
             }
 
             BlockEntity be = level.getBlockEntity(pos);

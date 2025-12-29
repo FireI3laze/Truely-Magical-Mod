@@ -42,6 +42,10 @@ import java.util.*;
 
 public class MonolithBlockEntity extends BlockEntity implements MenuProvider {
 
+    public float itemPY = 1.0f;
+    public float itemYaw = 0f;
+
+
     private final ItemStackHandler items = new ItemStackHandler(1) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
@@ -136,12 +140,23 @@ public class MonolithBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     private void updateLight() {
-        if (level != null) {
-            BlockState state = level.getBlockState(worldPosition);
-            int light = items.getStackInSlot(0).isEmpty() ? 0 : 15;
-            level.setBlock(worldPosition, state.setValue(MonolithBlock.LIGHT, light), 3);
+        if (level == null) return;
+
+        BlockState lowerState = level.getBlockState(worldPosition);
+        int light = items.getStackInSlot(0).isEmpty() ? 0 : 12;
+
+        // Unterer Block
+        level.setBlock(worldPosition, lowerState.setValue(MonolithBlock.LIGHT, light), 3);
+
+        // Oberer Block
+        BlockPos upperPos = worldPosition.above();
+        BlockState upperState = level.getBlockState(upperPos);
+
+        if (upperState.getBlock() instanceof MonolithBlock) {
+            level.setBlock(upperPos, upperState.setValue(MonolithBlock.LIGHT, light), 3);
         }
     }
+
 
     // ############## Interface ##############
 
