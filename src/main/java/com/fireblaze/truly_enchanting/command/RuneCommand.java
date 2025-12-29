@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.io.File;
 import java.io.Reader;
@@ -551,18 +552,22 @@ public class RuneCommand {
             }
 
             if (changed) {
-                // RuneLoader Map updaten
                 RuneDefinition rune = RuneLoader.getRuneDefinition(runeId.toString());
-                if (rune != null) RuneLoader.RUNE_DEFINITIONS.put(runeId.toString(), rune);
+                if (rune != null) {
+                    RuneLoader.RUNE_DEFINITIONS.put(runeId.toString(), rune);
+                }
 
-                // Packet an den Spieler senden
-                assert rune != null;
-                SyncRuneDefinitionsPacket packet =
-                        new SyncRuneDefinitionsPacket(Map.of(runeId.toString(), rune));
+                // ===== NUR MULTIPLAYER =====
+                if (ServerLifecycleHooks.getCurrentServer() != null
+                        && !ServerLifecycleHooks.getCurrentServer().isSingleplayer()) {
 
-                boolean isSinglePlayer = Minecraft.getInstance().isLocalServer();
-                if (!isSinglePlayer) Network.CHANNEL.send(PacketDistributor.ALL.noArg(), packet);
+                    SyncRuneDefinitionsPacket packet =
+                            new SyncRuneDefinitionsPacket(RuneLoader.getRuneDefinitions());
+
+                    Network.CHANNEL.send(PacketDistributor.ALL.noArg(), packet);
+                }
             }
+
 
             return true;
 

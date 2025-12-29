@@ -14,9 +14,9 @@ import net.minecraftforge.registries.RegistryObject;
 public class ModCreativeModTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MOD_TABS =DeferredRegister.create(Registries.CREATIVE_MODE_TAB, TrulyEnchanting.MODID);
 
-    public static final RegistryObject<CreativeModeTab> MAGIC_OVERHAUL_TAB = CREATIVE_MOD_TABS.register("magic_overhaul_tab",
+    public static final RegistryObject<CreativeModeTab> MAGIC_OVERHAUL_TAB = CREATIVE_MOD_TABS.register("truly_enchanting_tab",
             () -> CreativeModeTab.builder().icon(() -> new ItemStack(ModItems.WAND.get()))
-                    .title(Component.translatable("creativetab.magic_overhaul_tab"))
+                    .title(Component.translatable("creativetab.truly_enchanting_tab"))
                     .displayItems(((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.WAND.get());
                         pOutput.accept(ModItems.MAGIC_ESSENCE.get());

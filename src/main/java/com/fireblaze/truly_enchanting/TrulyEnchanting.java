@@ -6,7 +6,7 @@ import com.fireblaze.truly_enchanting.network.Network;
 import com.fireblaze.truly_enchanting.registry.*;
 import com.fireblaze.truly_enchanting.client.screen.MonolithScreen;
 import com.fireblaze.truly_enchanting.client.screen.ArcaneEnchantingTableScreen;
-import com.fireblaze.truly_enchanting.client.renderer.MonolithRenderer;
+import com.fireblaze.truly_enchanting.client.renderer.MonolithItemRenderer;
 import com.fireblaze.truly_enchanting.runes.RuneLoader;
 import com.fireblaze.truly_enchanting.util.Registration;
 import com.mojang.logging.LogUtils;
@@ -65,7 +65,6 @@ public class TrulyEnchanting
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-
     private void commonSetup(final FMLCommonSetupEvent event) {
         Network.register();
 
@@ -120,7 +119,7 @@ public class TrulyEnchanting
 
         @SubscribeEvent
         public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-            event.registerBlockEntityRenderer(ModBlockEntities.MONOLITH_BLOCK_ENTITY.get(), MonolithRenderer::new);
+            event.registerBlockEntityRenderer(ModBlockEntities.MONOLITH_BLOCK_ENTITY.get(), MonolithItemRenderer::new);
             event.registerBlockEntityRenderer(ModBlockEntities.ARCANE_ENCHANTING_TABLE.get(), ArcaneEnchantingTableRenderer::new);
         }
     }

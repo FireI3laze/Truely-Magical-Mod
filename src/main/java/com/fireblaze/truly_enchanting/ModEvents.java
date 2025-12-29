@@ -5,6 +5,7 @@ import com.fireblaze.truly_enchanting.network.Network;
 import com.fireblaze.truly_enchanting.network.SyncBindingPacket;
 import com.fireblaze.truly_enchanting.network.SyncRuneDefinitionsPacket;
 import com.fireblaze.truly_enchanting.registry.ModEnchantments;
+import com.fireblaze.truly_enchanting.runes.RuneDefinition;
 import com.fireblaze.truly_enchanting.runes.RuneLoader;
 import com.fireblaze.truly_enchanting.util.BindingManager;
 import com.fireblaze.truly_enchanting.util.BoundTable;
@@ -28,6 +29,7 @@ import net.minecraftforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = TrulyEnchanting.MODID)
 public class ModEvents {
@@ -36,10 +38,6 @@ public class ModEvents {
     public static void onPlayerLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
-        BoundTable boundTable = BindingManager.getBoundTable(event.getEntity());
-        if (boundTable == null || boundTable.pos() == null || boundTable.dimension() == null) return;
-
-        Network.sendToClient(player, new SyncBindingPacket(boundTable.pos(), boundTable.dimension()));
         SyncRuneDefinitionsPacket packet =
                 new SyncRuneDefinitionsPacket(RuneLoader.getRuneDefinitions());
 
@@ -47,6 +45,11 @@ public class ModEvents {
                 PacketDistributor.PLAYER.with(() -> player),
                 packet
         );
+
+        BoundTable boundTable = BindingManager.getBoundTable(event.getEntity());
+        if (boundTable == null || boundTable.pos() == null || boundTable.dimension() == null) return;
+
+        Network.sendToClient(player, new SyncBindingPacket(boundTable.pos(), boundTable.dimension()));
     }
 
     /*

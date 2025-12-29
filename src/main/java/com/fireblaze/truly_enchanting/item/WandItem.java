@@ -395,20 +395,20 @@ public class WandItem extends Item {
             else System.out.println("binding is null");
 
             if(currentBinding != null && !currentBinding.equals(boundTable)) {
-                    player.displayClientMessage(Component.literal("You are already bound to another table!"), true);
+                player.displayClientMessage(Component.literal("You are already bound to another table!"), true);
                 return InteractionResult.SUCCESS;
             }
 
             if(currentBinding != null && currentBinding.equals(boundTable)) {
                 // trennen
                 BindingManager.unbind(player);
-                    player.displayClientMessage(Component.literal("Unbound from this table."), true);
+                player.displayClientMessage(Component.literal("Unbound from this table."), true);
                 return InteractionResult.SUCCESS;
             }
 
             // verbinden
             boolean success = BindingManager.bind(player, table);
-                player.displayClientMessage(Component.literal("Bound to this Arcane Enchanting Table."), true);
+            player.displayClientMessage(Component.literal("Bound to this Arcane Enchanting Table."), true);
             return InteractionResult.SUCCESS;
         }
 
@@ -432,7 +432,7 @@ public class WandItem extends Item {
     }
 
     private record ParticleBeam(ServerLevel level, BlockPos start, Vec3 end, Runnable onComplete, double distance) {
-    public static boolean completed = false; // Ob dieser Strahl fertig ist
+        public static boolean completed = false; // Ob dieser Strahl fertig ist
     }
 
     private static void startParticleBeamAnimation(ServerLevel level, ArcaneEnchantingTableBlockEntity tableBE, Runnable onComplete) {
@@ -573,7 +573,7 @@ public class WandItem extends Item {
 
                 // Partikellogik
                 double startX = beam.start.getX() + 0.5;
-                double startY = beam.start.getY() + 2.2;
+                double startY = beam.start.getY() + 2.0;
                 double startZ = beam.start.getZ() + 0.5;
                 double endX = beam.end.x;
                 double endY = beam.end.y - 0.3;
@@ -796,17 +796,17 @@ public class WandItem extends Item {
         }
     }
     private static void renderBoxAroundBlock(PoseStack poseStack, Camera camera, BlockPos pos, MultiBufferSource.BufferSource buffer, float red, float green, float blue) {
-            poseStack.pushPose();
-                poseStack.translate(
-                        pos.getX() - camera.getPosition().x,
-                        pos.getY() - camera.getPosition().y,
-                        pos.getZ() - camera.getPosition().z
-                );
+        poseStack.pushPose();
+        poseStack.translate(
+                pos.getX() - camera.getPosition().x,
+                pos.getY() - camera.getPosition().y,
+                pos.getZ() - camera.getPosition().z
+        );
 
-    VertexConsumer consumer = buffer.getBuffer(RenderType.lines());
-                LevelRenderer.renderLineBox(poseStack, consumer, 0, 0, 0, 1, 3, 1, red, green, blue, 0.5f); // 3 Blöcke hoch
+        VertexConsumer consumer = buffer.getBuffer(RenderType.lines());
+        LevelRenderer.renderLineBox(poseStack, consumer, 0, 0, 0, 1, 3, 1, red, green, blue, 0.5f); // 3 Blöcke hoch
 
-                poseStack.popPose();
+        poseStack.popPose();
     }
 
     @Override

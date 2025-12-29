@@ -9,6 +9,7 @@ import com.fireblaze.truly_enchanting.runes.RuneDefinition;
 import com.fireblaze.truly_enchanting.runes.RuneItem;
 import com.fireblaze.truly_enchanting.runes.RuneLoader;
 import com.fireblaze.truly_enchanting.util.MagicSourceBlocks;
+import com.fireblaze.truly_enchanting.util.ModTags;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -44,8 +45,13 @@ public class MonolithBlockEntity extends BlockEntity implements MenuProvider {
     private final ItemStackHandler items = new ItemStackHandler(1) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            return true;
-            //return stack.is(ModTags.Items.RUNES); //todo  fix that
+            // Nur unser Runen-Item
+            if (!(stack.getItem() instanceof RuneItem)) return false;
+
+            // Muss eine Rune-Definition tragen
+            if (!stack.hasTag()) return false;
+            assert stack.getTag() != null;
+            return stack.getTag().contains("rune_id");
         }
     };
 

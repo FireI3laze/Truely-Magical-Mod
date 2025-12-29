@@ -1,20 +1,20 @@
 {
   "replace": false,
   "values": [
-    "magic_overhaul:village_rune",
-    "magic_overhaul:mineshaft_rune",
-    "magic_overhaul:ancient_city_rune",
-    "magic_overhaul:spawner_room_rune",
-    "magic_overhaul:outpost_rune",
-    "magic_overhaul:ruined_portal_rune",
-    "magic_overhaul:shipwreck_rune",
-    "magic_overhaul:underwater_ruin_rune",
-    "magic_overhaul:desert_pyramid_rune",
-    "magic_overhaul:jungle_pyramid_rune",
-    "magic_overhaul:buried_treasure_rune",
-    "magic_overhaul:igloo_rune",
-    "magic_overhaul:stronghold_rune",
-    "magic_overhaul:end_city_rune",
-    "magic_overhaul:courses_rune"
+    "truly_enchanting:village_rune",
+    "truly_enchanting:mineshaft_rune",
+    "truly_enchanting:ancient_city_rune",
+    "truly_enchanting:spawner_room_rune",
+    "truly_enchanting:outpost_rune",
+    "truly_enchanting:ruined_portal_rune",
+    "truly_enchanting:shipwreck_rune",
+    "truly_enchanting:underwater_ruin_rune",
+    "truly_enchanting:desert_pyramid_rune",
+    "truly_enchanting:jungle_pyramid_rune",
+    "truly_enchanting:buried_treasure_rune",
+    "truly_enchanting:igloo_rune",
+    "truly_enchanting:stronghold_rune",
+    "truly_enchanting:end_city_rune",
+    "truly_enchanting:courses_rune"
   ]
 }

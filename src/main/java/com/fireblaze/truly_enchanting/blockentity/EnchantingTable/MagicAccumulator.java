@@ -88,6 +88,7 @@ public class MagicAccumulator {
         }
         // Magiezuwachs für diesen Tick berechnen
         float gainThisTick = (float) currentMagicPowerIncreaseRate / (60 * 60 * 20) * onlineBoundPlayers;
+        //System.out.println(currentMagicPowerIncreaseRate + " | " + onlineBoundPlayers);
 
         // Überladung verhindern
         accumulatedMagicPower = Math.min(

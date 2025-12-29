@@ -1,8 +1,13 @@
 package com.fireblaze.truly_enchanting.runes;
 
+import com.fireblaze.truly_enchanting.network.Network;
+import com.fireblaze.truly_enchanting.network.SyncRuneDefinitionsPacket;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.io.File;
 import java.io.FileReader;
@@ -11,6 +16,11 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 public class RuneLoader {
 
@@ -19,11 +29,15 @@ public class RuneLoader {
     public static void reloadRunes(File runesDir, String modid) {
         loadRunes(runesDir, modid);
 
-        //SyncRuneDefinitionsPacket packet = todo
-        //        new SyncRuneDefinitionsPacket(RuneLoader.getRuneDefinitions());
+        SyncRuneDefinitionsPacket packet =
+                new SyncRuneDefinitionsPacket(RuneLoader.getRuneDefinitions());
 
-        //boolean isSinglePlayer = Minecraft.getInstance().isLocalServer();
-        //if (!isSinglePlayer) Network.CHANNEL.send(PacketDistributor.ALL.noArg(), packet);
+        // ===== NUR DEDICATED SERVER =====
+        if (ServerLifecycleHooks.getCurrentServer() != null
+                && !ServerLifecycleHooks.getCurrentServer().isSingleplayer()) {
+
+            Network.CHANNEL.send(PacketDistributor.ALL.noArg(), packet);
+        }
     }
 
     public static void loadRunes(File runesDir, String modid) {
@@ -108,8 +122,42 @@ public class RuneLoader {
         return RUNE_DEFINITIONS;
     }
 
-    public static void replaceAll(Map<String, RuneDefinition> runes) {
+    public static void replaceAll(
+            Map<String, RuneDefinition> runes
+    ) {
         RUNE_DEFINITIONS.clear();
         RUNE_DEFINITIONS.putAll(runes);
     }
+
+
+    public static void broadcastAllRunes(MinecraftServer server) {
+        if (server == null) return;
+
+        if (RUNE_DEFINITIONS.isEmpty()) {
+            Component msg = Component.literal("§c[Runes] Keine Runen geladen.");
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                player.sendSystemMessage(msg);
+            }
+            return;
+        }
+
+        // Header
+        Component header = Component.literal(
+                "§6[Runes] Geladene Runen (" + RUNE_DEFINITIONS.size() + "):"
+        );
+
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            player.sendSystemMessage(header);
+        }
+
+        // Einzelne Runen
+        for (RuneDefinition rune : RUNE_DEFINITIONS.values()) {
+            Component line = Component.literal(" §7- §e" + rune.id);
+
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                player.sendSystemMessage(line);
+            }
+        }
+    }
+
 }

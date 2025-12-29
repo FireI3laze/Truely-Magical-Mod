@@ -1,22 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "WMW",
-    "WCW",
-    "SCS"
+    "C C",
+    "C C",
+    "OOO"
   ],
   "key": {
-    "S": {
-      "item": "minecraft:cobblestone_stairs"
+    "O": {
+      "item": "minecraft:obsidian"
     },
     "C": {
-      "item": "minecraft:cobblestone"
-    },
-    "W": {
-      "item": "minecraft:cobblestone_wall"
-    },
-    "M": {
-      "item": "truly_enchanting:magic_essence"
+      "item": "minecraft:chiseled_stone_bricks"
     }
   },
   "result": {

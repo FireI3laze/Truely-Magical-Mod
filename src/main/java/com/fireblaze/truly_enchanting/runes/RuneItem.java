@@ -42,12 +42,16 @@ public class RuneItem extends Item {
             RuneDefinition rune = RuneLoader.getRuneDefinition(id.toString());
 
             if (rune != null) {
-                // Beschreibung
                 tooltip.add(
-                        Component.literal("Insert into a monolith to unleash magical powers")
+                        Component.literal("Insert into a Monolith")
+                                .withStyle(ChatFormatting.GRAY)
+                );
+                tooltip.add(
+                        Component.literal("to unleash Enchantments")
                                 .withStyle(ChatFormatting.GRAY)
                 );
             }
+
         } else {
             tooltip.add(
                     Component.literal("Rune has no valid NBT")

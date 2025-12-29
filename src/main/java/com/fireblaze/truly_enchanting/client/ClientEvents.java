@@ -15,16 +15,31 @@ import java.util.HashMap;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ClientEvents {
 
-    @SubscribeEvent
-    public static void onClientLoggingIn(ClientPlayerNetworkEvent.LoggingIn event) {
-        // Desync Runes from Server and Sync with client
-        RuneLoader.replaceAll(new HashMap<>());
-        File runesDir = new File(
-                FMLPaths.CONFIGDIR.get().toFile(),
-                "truly_enchanting/runes"
-        );
+    private static boolean runesLoaded = false;
 
-        boolean isSinglePlayer = Minecraft.getInstance().isLocalServer();
-        if (isSinglePlayer) RuneLoader.reloadRunes(runesDir, TrulyEnchanting.MODID);
+    @SubscribeEvent
+    public static void onClientTick(net.minecraftforge.event.TickEvent.ClientTickEvent event) {
+        if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+
+        Minecraft mc = Minecraft.getInstance();
+        if (!mc.isLocalServer()) return;  // Nur Singleplayer
+        if (runesLoaded) return;          // Nur einmal ausführen
+        if (mc.level == null) return;     // Welt noch nicht geladen
+
+        // Desync Runes from Server (leeren)
+        RuneLoader.replaceAll(new HashMap<>());
+
+        // Reload aus config
+        File runesDir = new File(FMLPaths.CONFIGDIR.get().toFile(), "truly_enchanting/runes");
+        RuneLoader.reloadRunes(runesDir, TrulyEnchanting.MODID);
+
+        runesLoaded = true;
     }
+
+    @SubscribeEvent
+    public static void onClientLoggedOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        // Reset, sobald der Spieler eine Welt verlässt
+        runesLoaded = false;
+    }
+
 }

@@ -9,7 +9,7 @@ import net.minecraft.world.item.Item;
 public class ModTags {
 
     public static class Items {
-        public static final TagKey<Item> RUNES =
+        public static final TagKey<Item> RUNE =
                 TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(TrulyEnchanting.MODID, "runes"));
     }
 }
